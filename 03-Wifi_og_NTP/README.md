@@ -1,4 +1,4 @@
-# Styring av utganger ved hjelp av klokke
+# Tilkobling til WiFi og henting av tid og dato fra NTP-server
 
 For å kjøre dette eksempelet trengs det kun PLC som er tilkoblet datamaskin med USB-kabel.
 
