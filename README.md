@@ -1,7 +1,7 @@
 # 💡 Prosjekt Veilys 
 
 ## ℹ️ Om prosjekt veilys
-Veillys er et utviklingprosjekt med mål om å lage et komplett styringssystem for veibelysning. Prosjektet er et samarbeid mellom seksjon for samferdsel, miljø og mobilitet (SMM) og utviklingsavdelingen i Vestfold og Telemark fylkeskommune.
+Prosjekt veibelysning er et repo for prototyping og testing av utstyr og kode med mål om å lage et komplett styringssystem for veibelysning. Prosjektet er et samarbeid mellom seksjon for samferdsel, miljø og mobilitet (SMM) og utviklingsavdelingen i Vestfold og Telemark fylkeskommune.
 
 All kode og informasjon om prosjektet og de tekniske løsningene åpen og fritt tilgjengelig og lisensiert med Creative Commons 4.0 BY - SA Det btyr at du kan gjenbruke og modifisere koden som du selv ønsker så lenger du deler den videre og krediterer VTFK som opprinnelse.
 
