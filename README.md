@@ -23,7 +23,7 @@ Det er ikke alle USB-kabler som fungerer. Sørg for at du bruker en som er bereg
 |----|----|
 | [01 - Intro-IO_test](./01-Intro-IO_test/01-Intro-IO_test.ino) | Boilerplate og enkel funksjonalitetstest av innganger og utganger |
 | [02 - Automatisk styring med klokke](./02-Styring_med_klokke/) | Styring av utganger med klokke |
-| 03 - WiFi og NTP (kommer) | Tilkobling med WiFi og lesing av tid/dato fra NTP-server |
+| [03 - WiFi og NTP](./03-Wifi_og_NTP/) | Tilkobling med WiFi og lesing av tid/dato fra NTP-server |
 | 04 - Kobling til Azure IoT-central med WiFi (kommer) | Enkel tilkobling til Azure IoT-central |
 | 05 - flere eksempler kode kommer...||
 
