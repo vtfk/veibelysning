@@ -14,7 +14,6 @@
   2. Klokke: Grove RTC-biblioteket - https://github.com/Seeed-Studio/RTC_DS1307
 
   Programmet tenner og slukker innganger på PLC annenhvert minutt.
-
 */
 
 #include <SolarCalculator.h>
