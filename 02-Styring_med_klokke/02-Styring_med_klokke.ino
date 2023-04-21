@@ -31,7 +31,7 @@ const byte month = 4;
 const byte year = 23;
 */
 
-// Location
+// Bredde- og lengdegrad for Helgeroa ;-)
 double latitude = 58.9850417;
 double longitude = 9.8623531;
 int utc_offset = 2;
@@ -57,7 +57,6 @@ void setup()
 
 void loop()
 {
-
   // printTime();
   clock.getTime();
 

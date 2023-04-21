@@ -16,11 +16,14 @@ void setup() {
 
 // Hovedløkka
 void loop() {
-  // Utganger skrus på
+  // Utganger skrus på og det leses inn analog verdi fra I0.5
   Serial.write("Utganger skrur seg PÅ\n");
   digitalWrite(Q0_0, HIGH); // Digital 0-5 VO
   digitalWrite(R0_8, HIGH); // Rele av/på
   analogWrite(A0_2, 4095);  // Analog 12bit 0V-10V (Oppløsning: 4094 verdier)
+  Serial.write("Analog inngang har verdien: ");
+  Serial.print(analogRead(I0_5));
+  Serial.write("\n");
   delay(500);
 
   // Utganger skrus av
