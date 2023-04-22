@@ -449,6 +449,14 @@ void loop()
   }
 }
 
+void loop1() {
+  digitalWrite(Q0_1, HIGH);
+  delay(1000);
+  digitalWrite(Q0_1, LOW);
+  delay(1000);
+  Serial.write("Wax on Wax of!\n");
+}
+
 /* === Function Implementations === */
 
 /*
@@ -657,3 +665,6 @@ static void logging_function(log_level_t log_level, char const* const format, ..
     Serial.println(message);
   }
 }
+
+
+

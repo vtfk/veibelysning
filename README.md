@@ -1,9 +1,9 @@
 # 💡 Veilys 💡
 
 ## ℹ️ Om veilys
-Veilys er et repo for prototyping og testing av utstyr og kode med mål om å lage et komplett styringssystem for veibelysning i Vestfold og Telemark. Prosjektet er et samarbeid mellom seksjon for samferdsel, miljø og mobilitet (SMM) og utviklingsavdelingen i Vestfold og Telemark fylkeskommune.
+I dette erpoet finner du veiledninger og prototyping av utstyr og kode med mål om å lage et komplett styringssystem for veibelysning i Vestfold og Telemark. Prosjektet er et samarbeid mellom seksjon for samferdsel, miljø og mobilitet (SMM) og utviklingsavdelingen (BDK/TEK) i Vestfold og Telemark fylkeskommune.
 
-All kode og informasjon om prosjektet og de tekniske løsningene åpen og fritt tilgjengelig og lisensiert med Creative Commons 4.0 BY - SA Det btyr at du kan gjenbruke og modifisere koden som du selv ønsker så lenger du deler den videre og krediterer VTFK som opprinnelse.
+All kode og informasjon om prosjektet samt de tekniske løsningene åpne og fritt tilgjengelige. De er lisensiert med Creative Commons 4.0 BY - SA som betyr at du kan gjenbruke og modifisere koden slik du selv ønsker forutsatt at du deler den videre med samme lisens og krediterer VTFK som opphav.
 
 Ta gjerne kontakt om du har spørsmål eller lurer på noe!
 
@@ -26,8 +26,8 @@ Det er ikke alle USB-kabler som fungerer. Sørg for at du bruker en som er bereg
 | [01 - Intro-IO_test](./01-Intro-IO_test/01-Intro-IO_test.ino) | Boilerplate og enkel funksjonalitetstest av innganger og utganger |
 | [02 - Automatisk styring med klokke](./02-Styring_med_klokke/) | Styring av utganger med klokke |
 | [03 - WiFi og NTP](./03-Wifi_og_NTP/) | Tilkobling med WiFi og lesing av tid/dato fra NTP-server |
-| 04 - Styring baser på sensordata | Styring av utgab´nger basert på verdi fra temperatursensor |
-| 05 - Kobling til Azure IoT-central med WiFi (kommer) | Enkel tilkobling til Azure IoT-central |
+| [04 - Styring baser på sensordata](./04-Styring_med_sensor/) | Styring av utganger basert på verdier fra temperatursensor |
+| [05 - Kobling til Azure IoT-central med WiFi](./05-Tilkobling_Azure_IoT-central/) | Enkel tilkobling til Azure IoT-central |
 | 06 - flere eksempler og mer kode kommer...||
 
 
