@@ -1,24 +1,31 @@
+#define daTemp 999.8
 
+#include <Arduino.h>
 
+bool lys = false;
 
-void test_funksjon(const char* msg) {
-  Serial.print("Dette er en custom funksjon");
-  Serial.print(msg);
+float tallet() {
+  float pi = analogRead(I0_5);
+  if (lys) {
+    digitalWrite(Q0_0, HIGH);
+  } else {
+    digitalWrite(Q0_0, LOW);
+  }
+  lys = !lys;
+  return pi;
 }
 
+void veilyson() {
+  Serial.write("Nuuuu kjørrrr");
 
-void lys_on(const char* msg) {
-  digitalWrite(3, HIGH);
-  digitalWrite(4, HIGH);
-  digitalWrite(5, HIGH);
+  // Løkke for å lage litt action på utgangene :-)
+  for (int i = 0; i < 10; i++) {
+    digitalWrite(Q0_0, HIGH);
+    digitalWrite(R0_8, HIGH);
+    delay(100);
+    digitalWrite(Q0_0, LOW);
+    digitalWrite(R0_8, LOW);
+    delay(100);
+  }
 }
 
-void lys_off(const char* msg) {
-  digitalWrite(3, LOW);
-  digitalWrite(4, LOW);
-  digitalWrite(5, LOW);
-}
-
-void testkommando(const char* msg) {
-  digitalWrite(5, HIGH);
-}

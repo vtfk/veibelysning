@@ -38,7 +38,7 @@
 #include <time.h>
 
 // Egne bibliotek
-#include "./funksjoner.h"
+// #include "./funksjoner.h"
 
 // For hmac SHA256 encryption
 #include <mbedtls/base64.h>
@@ -353,7 +353,7 @@ static void on_command_request_received(command_request_t command)
   // However, for production application the recommendation is to save `command` and process it
   // outside this callback, usually inside the main thread/task/loop.
   (void)azure_pnp_handle_command_request(&azure_iot, command);
-  test_funksjon("Heisann!");
+  //test_funksjon("Heisann!");
 }
 
 /* --- Arduino setup and loop Functions --- */
