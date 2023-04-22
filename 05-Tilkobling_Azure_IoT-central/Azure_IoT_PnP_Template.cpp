@@ -277,7 +277,7 @@ static int generate_telemetry_payload(
 
   // Acquiring the simulated data.
   //temperature = simulated_get_temperature();
-  temperature = tallet(); // Funksjon for å hente et tall fra funksjoner.h
+  temperature = sensordata(); // Funksjon for å hente temperatur fra funksjoner.h
   humidity = simulated_get_humidity();
   light = simulated_get_ambientLight();
   simulated_get_pressure_altitude(&pressure, &altitude);

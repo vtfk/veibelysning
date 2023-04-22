@@ -1,8 +1,10 @@
 # Tilkobling til Azure IoT-centrak
 
+Dette eksempelet demonstrerer en basistilkobling til Azure IoT-central og demonstrer kun enkel sending av kommando fra Azure til PLC og enkel telemteri av sensordata fra PLC til Azure.
+
 Utgangspunktet for dette eksempelet er [ESP32-veiledningen til Azure SDK for C](https://github.com/Azure/azure-sdk-for-c-arduino/blob/main/examples/Azure_IoT_Central_ESP32/readme.md).
 
-For å kjøre dette eksempelet trengs det kun PLC som er tilkoblet datamaskin med USB-kabel.
+For at  kjøre eksempelet trengs det kun PLC som er tilkoblet datamaskin med USB-kabel.
 
 Programmet bruker trådløst nett til å koble seg opp på Azure IoT-central
 
@@ -11,11 +13,12 @@ Programmet bruker trådløst nett til å koble seg opp på Azure IoT-central
 * 1 stk USB-kabel
 * Arduino IDE v. 2.x
 * v.2.0.7 av industrialshields-esp32 board-biblioteket.
+* Potensiometer for å simulere en sensor
+* Om ønskelig: En lysdiode for å indikere at utgang slår seg av og på.
 
 Se mer informasjon i kodekommentarene
   
 ## Om programmet
-
 Dette eksempelet er en modifisert utgave av [ESP32-veiledningen til Azure SDK for C](https://github.com/Azure/azure-sdk-for-c-arduino/blob/main/examples/Azure_IoT_Central_ESP32/readme.md), men er så tilpasset eget utstyr og hardware.
 
 For at programmet skal fungere må det opprettes en fil som heter config.h. Denne må inneholde SSID og passord til det trådløse nettet som skal tilkobles.
@@ -24,7 +27,7 @@ I tillegg ligger det miljøvariabler (SSID, PASSORD og tilkoblingsinformasjon ti
 
 Slik ser config.h ut:
 
-```
+```c++
 #define SSID "<navn/SSID på det trådløse nette>";
 #define PASSWORD "<Passord til det trådløse nettet>";
 
@@ -37,6 +40,8 @@ Slik ser config.h ut:
 Info kommer
 
 ### Kjøre egne funksjoner
+Info kommer
 
 ### Telemetri og dataoverføring
+Info kommer
 
