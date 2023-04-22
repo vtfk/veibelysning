@@ -10,6 +10,6 @@ For å kjøre dette eksempelet trengs det kun PLC som er tilkoblet datamaskin me
 
 Se mer informasjon i kodekommentarene
   
-## Om progrrammet
+## Om programmet
 
 Kode kommer!

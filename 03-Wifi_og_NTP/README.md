@@ -12,7 +12,7 @@ Programmet kobler seg opp på trådløst nett og henter ned riktig dato/tid fra 
 
 Se mer informasjon i kodekommentarene
   
-## Om progrrammet
+## Om programmet
   
 For at programmet skal fungere må du opprette en fil som heter config.h. Denne må inneholde SSID og passord til det trådløse nettet som skal tilkobles.
 

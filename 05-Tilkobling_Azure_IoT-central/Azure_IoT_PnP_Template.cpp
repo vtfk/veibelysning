@@ -1,4 +1,3 @@
-#include "esp32-hal-gpio.h"
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // SPDX-License-Identifier: MIT
 
@@ -13,6 +12,8 @@
 
 #include <az_precondition_internal.h>
 
+#include "./funksjoner.h" // Importerer funksjonsbibliotek
+
 /* --- Defines --- */
 #define AZURE_PNP_MODEL_ID "dtmi:azureiot:devkit:freertos:Esp32AzureIotKit;1"
 
@@ -26,12 +27,12 @@
 #define SAMPLE_TOTAL_STORAGE_PROPERTY_NAME "totalStorage"
 #define SAMPLE_TOTAL_MEMORY_PROPERTY_NAME "totalMemory"
 
-#define SAMPLE_MANUFACTURER_PROPERTY_VALUE "ESPRESSIF"
-#define SAMPLE_MODEL_PROPERTY_VALUE "ESP32 Azure IoT Kit"
+#define SAMPLE_MANUFACTURER_PROPERTY_VALUE "Industrial Shields"
+#define SAMPLE_MODEL_PROPERTY_VALUE "ESP32 Azure IoT Kit - 19R+"
 #define SAMPLE_VERSION_PROPERTY_VALUE "1.0.0"
 #define SAMPLE_OS_NAME_PROPERTY_VALUE "FreeRTOS"
-#define SAMPLE_ARCHITECTURE_PROPERTY_VALUE "ESP32 WROVER-B"
-#define SAMPLE_PROCESSOR_MANUFACTURER_PROPERTY_VALUE "ESPRESSIF"
+#define SAMPLE_ARCHITECTURE_PROPERTY_VALUE "ESP32 PLC 19R"
+#define SAMPLE_PROCESSOR_MANUFACTURER_PROPERTY_VALUE "Industrial Shields"
 // The next couple properties are in KiloBytes.
 #define SAMPLE_TOTAL_STORAGE_PROPERTY_VALUE 4096
 #define SAMPLE_TOTAL_MEMORY_PROPERTY_VALUE 8192
@@ -50,9 +51,8 @@
 #define TELEMETRY_PROP_NAME_ACCELEROMETERY "accelerometerY"
 #define TELEMETRY_PROP_NAME_ACCELEROMETERZ "accelerometerZ"
 
-static az_span COMMAND_NAME_TOGGLE_LED_1 = AZ_SPAN_FROM_STR("ToggleLed1");
-static az_span COMMAND_NAME_TOGGLE_LED_2 = AZ_SPAN_FROM_STR("ToggleLed2");
-static az_span COMMAND_NAME_DISPLAY_TEXT = AZ_SPAN_FROM_STR("DisplayText");
+// Her defineres kommandoen fra Azure IoT-central
+static az_span COMMAND_NAME_VEILYS_ON = AZ_SPAN_FROM_STR("VeilysON");
 #define COMMAND_RESPONSE_CODE_ACCEPTED 202
 #define COMMAND_RESPONSE_CODE_REJECTED 404
 
@@ -86,8 +86,9 @@ static uint32_t telemetry_send_count = 0;
 static size_t telemetry_frequency_in_seconds = 10; // With default frequency of once in 10 seconds.
 static time_t last_telemetry_send_time = INDEFINITE_TIME;
 
-static bool led1_on = false;
-static bool led2_on = false;
+// Kan fjernes?
+// static bool led1_on = false;
+// static bool led2_on = false;
 
 /* --- Function Prototypes --- */
 /* Please find the function implementations at the bottom of this file */
@@ -179,23 +180,12 @@ int azure_pnp_handle_command_request(azure_iot_t* azure_iot, command_request_t c
 
   uint16_t response_code;
 
-  if (az_span_is_content_equal(command.command_name, COMMAND_NAME_TOGGLE_LED_1))
-  {
-    led1_on = !led1_on;
-    LogInfo("LED 1 state: %s", (led1_on ? "ON" : "OFF"));
-    response_code = COMMAND_RESPONSE_CODE_ACCEPTED;
-  }
-  else if (az_span_is_content_equal(command.command_name, COMMAND_NAME_TOGGLE_LED_2))
-  {
-    led2_on = !led2_on;
-    // digitalWrite(Q0_0, LOW);
-    LogInfo("LED 2 state: %s", (led2_on ? "ON" : "OFF"));
-    response_code = COMMAND_RESPONSE_CODE_ACCEPTED;
-  }
-  else if (az_span_is_content_equal(command.command_name, COMMAND_NAME_DISPLAY_TEXT))
+// Her setter man trigges de egendefinerte kommandoene
+  if (az_span_is_content_equal(command.command_name, COMMAND_NAME_VEILYS_ON))
   {
     // The payload comes surrounded by quotes, so to remove them we offset the payload by 1 and its
     // size by 2.
+    veilyson(); // Funksjon som kjøres fra funksjoner.h
     LogInfo(
         "OLED display: %.*s", az_span_size(command.payload) - 2, az_span_ptr(command.payload) + 1);
     response_code = COMMAND_RESPONSE_CODE_ACCEPTED;
@@ -238,7 +228,7 @@ int azure_pnp_handle_properties_update(
 /* --- Internal Functions --- */
 static float simulated_get_temperature() { return 21.0; }
 
-static float simulated_get_humidity() { return 88.0; }
+static float simulated_get_humidity() { return 12.3; }
 
 static float simulated_get_ambientLight() { return 700.0; }
 
@@ -286,7 +276,8 @@ static int generate_telemetry_payload(
   int32_t pitch, roll, accelerationX, accelerationY, accelerationZ;
 
   // Acquiring the simulated data.
-  temperature = simulated_get_temperature();
+  //temperature = simulated_get_temperature();
+  temperature = tallet(); // Funksjon for å hente et tall fra funksjoner.h
   humidity = simulated_get_humidity();
   light = simulated_get_ambientLight();
   simulated_get_pressure_altitude(&pressure, &altitude);
