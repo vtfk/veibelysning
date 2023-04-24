@@ -449,12 +449,13 @@ void loop()
   }
 }
 
+// Løkke som kjører på kjerne 2 i PLC
 void loop1() {
   digitalWrite(Q0_1, HIGH);
   delay(1000);
   digitalWrite(Q0_1, LOW);
   delay(1000);
-  Serial.write("Wax on Wax of!\n");
+  Serial.write("Wax on\n Wax of!\n");
 }
 
 /* === Function Implementations === */

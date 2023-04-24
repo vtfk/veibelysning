@@ -21,14 +21,14 @@ I testingen har det vist seg at siste versjon (2.1.x) av industrialshields-esp32
 
 Det er ikke alle USB-kabler som fungerer. Sørg for at du bruker en som er beregnet for dataoverføring.
 
-|||
+| **Mappe** | **Beskrivelse**|
 |----|----|
 | [01 - Intro-IO_test](./01-Intro-IO_test/01-Intro-IO_test.ino) | Boilerplate og enkel funksjonalitetstest av innganger og utganger |
-| [02 - Automatisk styring med klokke](./02-Styring_med_klokke/) | Styring av utganger med klokke |
+| [02 - Automatisk styring med klokke](./02-Styring_med_klokke/) | Styring av utganger med enkel klokke |
 | [03 - WiFi og NTP](./03-Wifi_og_NTP/) | Tilkobling med WiFi og lesing av tid/dato fra NTP-server |
 | [04 - Styring baser på sensordata](./04-Styring_med_sensor/) | Styring av utganger basert på verdier fra temperatursensor |
 | [05 - Kobling til Azure IoT-central med WiFi](./05-Tilkobling_Azure_IoT-central/) | Enkel tilkobling til Azure IoT-central |
-| 06 - flere eksempler og mer kode kommer...||
+| [06 - Autonom_styring](./06-Autonom_styring/) | Autonom styring med astrour |
 
 
 

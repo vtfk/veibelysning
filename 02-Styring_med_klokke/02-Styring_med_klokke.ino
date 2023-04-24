@@ -41,8 +41,7 @@ double transit, sunrise, sunset;
 void setup()
 {
   Serial.begin(9600);
-
-    clock.begin();
+  clock.begin();
   /*
   // Her kan klokken stilles om ønskelig
   clock.fillByYMD(2023, 4, 20); //Jan 19,2013
