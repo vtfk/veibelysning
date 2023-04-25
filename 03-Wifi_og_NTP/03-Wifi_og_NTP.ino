@@ -10,62 +10,46 @@
 
   I dette programmet brukes bibliotekene:
 
-  1. Wifi - https://github.com/arduino-libraries/WiFi
-  2. time - https://playground.arduino.cc/Code/Time/
+  1. WiFi - https://github.com/arduino-libraries/WiFi
+  2. ESP32Time - https://github.com/fbiego/ESP32Time/tree/main
 
   I tillegg ligger det miljøvariabler (SSID og PASSORD) i en egen fil som heter config.h. Sjekk README.md for info
 
   Programmet skriver ut tid og dato i consollen
 */
 
-
-// Import av nødvendige bibliotek
 #include <WiFi.h>
-#include "time.h"
+#include <ESP32Time.h>
 #include "./config.h"
 
 // Henter og setter nødvendige parameter
-const char* ssid       = SSID;
-const char* password   = PASSWORD;
+const char* ssid = SSID;
+const char* password = PASSWORD;
 
-const char* ntpServer = "pool.ntp.org";  // Server der nøyaktig tid hentes
-const long  gmtOffset_sec = 3600; // gmt +1 time i Norge
-const int   daylightOffset_sec = 3600;  // Sommertid +1 time
+long gmtOffset_sec = 3600;
+int daylightOffset_sec = 3600;
+const char* ntpServer = "no.pool.ntp.org";
 
-void printLocalTime()
-{
-  struct tm timeinfo;
-  if(!getLocalTime(&timeinfo)){
-    Serial.println("Noe gikk galt - Fikk ikke hentet tid og dato");
-    return;
-  }
-  Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
-}
+//ESP32Time rtc;
+ESP32Time rtc(0);
 
-void setup()
-{
+void setup() {
   Serial.begin(115200);
-  
+
   //connect to WiFi
-  Serial.printf("Kobler til WiFi-nett %s ", ssid);
+  Serial.printf("Connecting to %s ", ssid);
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) {
-      delay(500);
-      Serial.print(".");
+    delay(500);
+    Serial.print(".");
   }
-  Serial.println("Tilkoblet!");
-  
-  //init and get the time
-  configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
-  printLocalTime();
+  Serial.println(" CONNECTED");
 
-  //disconnect WiFi as it's no longer needed
-  WiFi.disconnect(true);
-  WiFi.mode(WIFI_OFF);
+  configTime(gmtOffset_sec, daylightOffset_sec, ntpServer); // Ikke skru av nettet før man er sikker på at denne kommanoden har kjørt
+
 }
 
-void loop()
-{
+void loop() {
+  Serial.println(rtc.getTime("%A, %B %d %Y %H:%M:%S"));
   delay(1000);
-  printLocalTime();
 }
