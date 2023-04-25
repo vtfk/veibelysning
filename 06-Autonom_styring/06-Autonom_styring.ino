@@ -1,5 +1,5 @@
 /*
-  Autonom styring av lys en Industrial Shields PLC ESP32 19R+
+  Autonom styring av lys med en Industrial Shields PLC ESP32 19R+
 
   All kode må brukes på eget ansvar -  Se mer på https://github.com/vtfk
   CC BY SA - VTFK 2023
@@ -17,7 +17,7 @@
 
   I tillegg ligger det miljøvariabler (SSID og PASSORD) i en egen fil som heter config.h. Sjekk README.md for info
 
-  Programmet skriver ut tid og dato i consollen
+  Programmet tenner og slukker utgang Q0_0 basert på soloppgang og solnedgang
 */
 
 #include <WiFi.h>
