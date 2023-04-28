@@ -41,7 +41,6 @@ int utc_offset = 2;
 int year, month, day;
 double transit, sunrise, sunset;
 
-
 //ESP32Time rtc;
 ESP32Time rtc(0);
 
