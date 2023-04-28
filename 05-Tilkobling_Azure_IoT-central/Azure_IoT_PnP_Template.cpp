@@ -53,6 +53,7 @@
 
 // Her defineres kommandoen fra Azure IoT-central
 static az_span COMMAND_NAME_VEILYS_ON = AZ_SPAN_FROM_STR("VeilysON");
+static az_span COMMAND_NAME_VEILYS_OFF = AZ_SPAN_FROM_STR("VeilysOFF");
 #define COMMAND_RESPONSE_CODE_ACCEPTED 202
 #define COMMAND_RESPONSE_CODE_REJECTED 404
 
@@ -180,7 +181,7 @@ int azure_pnp_handle_command_request(azure_iot_t* azure_iot, command_request_t c
 
   uint16_t response_code;
 
-// Her setter man trigges de egendefinerte kommandoene
+// Her trigges de egendefinerte kommandoene
   if (az_span_is_content_equal(command.command_name, COMMAND_NAME_VEILYS_ON))
   {
     // The payload comes surrounded by quotes, so to remove them we offset the payload by 1 and its
@@ -189,6 +190,9 @@ int azure_pnp_handle_command_request(azure_iot_t* azure_iot, command_request_t c
     LogInfo(
         "OLED display: %.*s", az_span_size(command.payload) - 2, az_span_ptr(command.payload) + 1);
     response_code = COMMAND_RESPONSE_CODE_ACCEPTED;
+  }
+  else if (az_span_is_content_equal(command.command_name, COMMAND_NAME_VEILYS_OFF)) {
+   veilysoff();
   }
   else
   {

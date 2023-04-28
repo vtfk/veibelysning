@@ -1,6 +1,5 @@
-#include <algorithm>
-#include "WString.h"
 
+// Dene funksjonen trengs ikke - Kun for formattering av utskrift i Serial monitor
 char* hoursToString(double h, char* str) {
   int m = int(round(h * 60));
   int hr = (m / 60) % 24;
