@@ -1,3 +1,5 @@
+#include "pins_is.h"
+#include "esp32-hal-adc.h"
 #include "esp32-hal-gpio.h"
 #include <Arduino.h>
 
@@ -7,7 +9,7 @@ bool lys = false;  // Toggle status lys
 float sensordata() {
   float sensordata = analogRead(I0_5);
   Serial.print("\nStatus på lys er: ");
-  Serial.print(digitalRead(Q0_0));
+  Serial.print(analogRead(I0_3));
   Serial.print("\n");
   // Kodesnutt som togggler lys av/på. Bare for mor skyld...
   /*
@@ -22,7 +24,7 @@ float sensordata() {
 }
 
 float lysstatus() {
-  int sensordata = digitalRead(Q0_0);
+  float sensordata = analogRead(I0_3);
   return sensordata;
 }
 

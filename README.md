@@ -29,6 +29,8 @@ Det er ikke alle USB-kabler som fungerer. Sørg for at du bruker en som er bereg
 | [04 - Styring baser på sensordata](./04-Styring_med_sensor/) | Styring av utganger basert på verdier fra temperatursensor |
 | [05 - Kobling til Azure IoT-central med WiFi](./05-Tilkobling_Azure_IoT-central/) | Enkel tilkobling til Azure IoT-central |
 | [06 - Autonom_styring](./06-Autonom_styring/) | Autonom styring med astrour |
+| [07 - Styring med Azure IoT-central og Astrour](./07-Styring_med_Azure_IoT-central/) | Styring med Azure IoT-central og Astrour |
+
 
 
 

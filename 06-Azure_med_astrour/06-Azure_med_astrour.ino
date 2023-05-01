@@ -449,7 +449,7 @@ void loop1() {
   Serial.print("\n");
   Serial.print("Grålysning: ");
   Serial.print(hoursToString(c_dawn + utc_offset, str));
-  Serial.print("\n\n\n\n");
+  Serial.print("\n");
 
   if (isD) {
     Serial.print("Nå errre natta!\n");

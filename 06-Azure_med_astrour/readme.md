@@ -1,6 +1,6 @@
-# Tilkobling til Azure IoT-centrak
+# Tilkobling til Azure IoT-central med WiFi
 
-Dette eksempelet demonstrerer en basistilkobling til Azure IoT-central og demonstrer kun enkel sending av kommando fra Azure til PLC og enkel telemteri av sensordata fra PLC til Azure.
+Dette eksempelet demonstrerer en basistilkobling til Azure IoT-central og demonstrer kun enkel sending av kommando fra Azure til PLC og enkel telemteri av simulerte sensordata fra PLC til Azure.
 
 Utgangspunktet for dette eksempelet er [ESP32-veiledningen til Azure SDK for C](https://github.com/Azure/azure-sdk-for-c-arduino/blob/main/examples/Azure_IoT_Central_ESP32/readme.md).
 
@@ -13,7 +13,7 @@ Programmet bruker trådløst nett til å koble seg opp på Azure IoT-central
 * 1 stk USB-kabel
 * Arduino IDE v. 2.x
 * v.2.0.7 av industrialshields-esp32 board-biblioteket.
-* Potensiometer for å simulere en sensor
+* Om ønskelig: Potensiometer for å simulere en sensor
 * Om ønskelig: En lysdiode for å indikere at utgang slår seg av og på.
 
 Se mer informasjon i kodekommentarene
