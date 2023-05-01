@@ -26,12 +26,6 @@ Det er ikke alle USB-kabler som fungerer. Sørg for at du bruker en som er bereg
 | [01 - Intro-IO_test](./01-Intro-IO_test/01-Intro-IO_test.ino) | Boilerplate og enkel funksjonalitetstest av innganger og utganger |
 | [02 - Automatisk styring med klokke](./02-Styring_med_klokke/) | Styring av utganger med enkel klokke |
 | [03 - WiFi og NTP](./03-Wifi_og_NTP/) | Tilkobling med WiFi og lesing av tid/dato fra NTP-server |
-| [04 - Styring baser på sensordata](./04-Styring_med_sensor/) | Styring av utganger basert på verdier fra temperatursensor |
-| [05 - Kobling til Azure IoT-central med WiFi](./05-Tilkobling_Azure_IoT-central/) | Enkel tilkobling til Azure IoT-central |
-| [06 - Autonom_styring](./06-Autonom_styring/) | Autonom styring med astrour |
-| [07 - Styring med Azure IoT-central og Astrour](./07-Styring_med_Azure_IoT-central/) | Styring med Azure IoT-central og Astrour |
-
-
-
-
-
+| [04 - Enkel styring med astronomisk klokke](./04-Enkel_styring_med_astrour/) | Styring av utganger med astronomisk klokke |
+| [05 - Basistilkobling mot Azure IoT-central](./05-Basistilkobling_mot_Azure_IoT-central/) | Enkel tilkobling mot Azure IoT-central |
+| [06 - Styring med astronomisk klokke og Azure IoT-central](./06-Styring_med_astrour_og_Azure_IoT-central/) | Styring av utganger med astronomisk klokke og Azure IoT-central |
