@@ -46,7 +46,8 @@ bool sjekkManuell_lys() {
 }
 
 bool sjekkManuell_styring() {
-  return true;
+  //return true;
+  return false;
 }
 
 bool sjekkManuell_toppsystem() {

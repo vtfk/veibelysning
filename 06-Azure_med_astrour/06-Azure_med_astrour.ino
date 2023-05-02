@@ -494,24 +494,28 @@ void loop1() {
   Serial.print("\n");
 
   // Sjekker isD (isDark()) om det er natt eller dag og tenner/slukker utgang
-  if (isD && !manuell_styring && !manuell_toppsystem) {
-    Serial.print("Automatisk styring: PÅ!\n");
-    digitalWrite(Q0_0, HIGH);
-  } else {
-    Serial.print("Automatisk styring: AV!\n");
-    digitalWrite(Q0_0, LOW);
+  if (!manuell_styring && !manuell_toppsystem) {
+    if (isD) {
+      Serial.print("Automatisk styring aktiv - Lampestatus: PÅ!\n");
+      digitalWrite(Q0_0, HIGH);
+    } else {
+      Serial.print("Automatisk styring aktiv - Lampestatus AV!\n");
+      digitalWrite(Q0_0, LOW);
+    }
   }
-  
-  if (manuell_styring && manuell_lys) {
-    Serial.print("Manuell styring: PÅ!\n");
-    digitalWrite(Q0_0, HIGH);
-  } else {
-    Serial.print("Manuell styring: AV!\n");
-    digitalWrite(Q0_0, LOW);
+    
+  if (manuell_styring) {
+    if(manuell_lys){
+      Serial.print("Manuell styring aktiv - Lampestatus: PÅ!\n");
+      digitalWrite(Q0_0, HIGH);
+    } else {
+      Serial.print("Manuell styring aktiv - Lampestatus AV!\n");
+      digitalWrite(Q0_0, LOW);
+    }
   }
 
   if (manuell_toppsystem) {
-    Serial.print("Toppsystem har nå kontrollen!\n");
+    Serial.print("Toppsystem aktivt!\n");
   }
 
   delay(5000); // Vent 5 sekunder før neste sjekk

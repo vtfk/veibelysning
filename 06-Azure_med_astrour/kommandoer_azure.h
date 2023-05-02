@@ -24,7 +24,7 @@ void veilyson() {
     digitalWrite(Q0_0, HIGH);
     digitalWrite(R0_8, HIGH);
     delay(100);
-    digitalWrite(Q0_0, LOW);
+    // digitalWrite(Q0_0, LOW);
     digitalWrite(R0_8, LOW);
     delay(100);
   }
@@ -35,7 +35,7 @@ void veilysoff() {
 
   // Løkke for å lage litt action på utgangene :-)
   for (int i = 0; i < 10; i++) {
-    digitalWrite(Q0_0, HIGH);
+    // digitalWrite(Q0_0, HIGH);
     digitalWrite(R0_8, HIGH);
     delay(100);
     digitalWrite(Q0_0, LOW);
