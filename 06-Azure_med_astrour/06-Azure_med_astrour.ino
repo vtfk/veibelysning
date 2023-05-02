@@ -83,6 +83,12 @@ int utc_offset = 2;
 int year, month, day;
 double transit, sunrise, sunset, c_dawn, c_dusk;
 
+// Globale "tilstander"
+bool isD = false;
+bool manuell_styring = true;
+bool manuell_lys = false;
+bool door_open = false;
+
 //ESP32Time rtc;
 ESP32Time rtc(0);
 
@@ -470,7 +476,11 @@ void loop1() {
   Serial.print(rtc.getTimeDate(true) + "\n");
   calcCivilDawnDusk(year, month, day, latitude, longitude, transit, c_dawn, c_dusk);
   calcSunriseSunset(year, month, day, latitude, longitude, transit, sunrise, sunset);
-  bool isD = isDark(sunrise + utc_offset, sunset + utc_offset, rtc.getHour(true), rtc.getMinute());
+  
+  // Sjekker tilstanden til lysstyringen.
+  isD = isDark(sunrise + utc_offset, sunset + utc_offset, rtc.getHour(true), rtc.getMinute());
+  manuell_styring = sjekkManuell_styring();
+  manuell_lys = sjekkManuell_lys();
 
   // Logging til Serial for debugging
   char str[6];
@@ -482,11 +492,19 @@ void loop1() {
   Serial.print("\n");
 
   // Sjekker isD (isDark()) om det er natt eller dag og tenner/slukker utgang
-  if (isD) {
-    Serial.print("Nå errre natta!\n");
+  if (isD && !manuell_styring) {
+    Serial.print("Automatisk styring: PÅ!\n");
     digitalWrite(Q0_0, HIGH);
   } else {
-    Serial.print("Nå errre lyse dagen!\n");
+    Serial.print("Automatisk styring: AV!\n");
+    digitalWrite(Q0_0, LOW);
+  }
+  
+  if (manuell_styring && manuell_lys) {
+    Serial.print("Manuell styring: PÅ!\n");
+    digitalWrite(Q0_0, HIGH);
+  } else {
+    Serial.print("Manuell styring: AV!\n");
     digitalWrite(Q0_0, LOW);
   }
   delay(5000); // Vent 5 sekunder før neste sjekk
