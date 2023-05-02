@@ -1,3 +1,30 @@
+
+/*
+  Autonom styring av lys med astrour og tilkobling til Azure IoT-central på en Industrial Shields PLC ESP32 19R+
+
+  Koden er et modifisert eksempel basert på kode fra Azure IoT Central og Azure IoT SDK for C.
+  Se eksempel 05-Basistilkobling til Azure IoT Central for utgangspunktet for denne koden.
+
+  All kode må brukes på eget ansvar -  Se mer på https://github.com/vtfk
+  CC BY SA - VTFK 2023
+
+  Koden er kjørt i Arduino IDE v2.0.4
+  Husk å bruke v.2.0.7 av industrialshields-esp32 board-biblioteket.
+
+  Les mer om PLC ESP32 19R+ på: https://www.industrialshields.com/
+
+  I dette programmet brukes bibliotekene:
+
+  1. Wifi - https://github.com/arduino-libraries/WiFi
+  2. ESP32Time - https://github.com/fbiego/ESP32Time/tree/main
+  3. SolarCalculator - https://github.com/jpb10/SolarCalculator
+  4. Azure IoT SDK for C - Diverse biblioteker fra kodeeksempler fra Azure IoT Central
+
+  I tillegg ligger det miljøvariabler (SSID og PASSORD) i en egen fil som heter config.h. Sjekk README.md for info
+
+  Programmet tenner og slukker utgang Q0_0 basert på soloppgang og solnedgang
+*/
+
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // SPDX-License-Identifier: MIT
 
@@ -431,7 +458,9 @@ void loop() {
   }
 }
 
-// Løkke som kjører på kjerne 2 i PLC
+// Løkke som kjører på kjerne 2 i PLC 
+// Her ligger logikk for lysstyring og klokke
+// Loope1 kjører uavhengig av Azure IoT-Central og fungerer helt fint uten nettverk
 
 void loop1() {
   year = rtc.getYear();
@@ -443,6 +472,7 @@ void loop1() {
   calcSunriseSunset(year, month, day, latitude, longitude, transit, sunrise, sunset);
   bool isD = isDark(sunrise + utc_offset, sunset + utc_offset, rtc.getHour(true), rtc.getMinute());
 
+  // Logging til Serial for debugging
   char str[6];
   Serial.print("\nTussmørke: ");
   Serial.print(hoursToString(c_dusk + utc_offset, str));
@@ -451,6 +481,7 @@ void loop1() {
   Serial.print(hoursToString(c_dawn + utc_offset, str));
   Serial.print("\n");
 
+  // Sjekker isD (isDark()) om det er natt eller dag og tenner/slukker utgang
   if (isD) {
     Serial.print("Nå errre natta!\n");
     digitalWrite(Q0_0, HIGH);
@@ -458,7 +489,7 @@ void loop1() {
     Serial.print("Nå errre lyse dagen!\n");
     digitalWrite(Q0_0, LOW);
   }
-  delay(5000);
+  delay(5000); // Vent 5 sekunder før neste sjekk
 }
 
 

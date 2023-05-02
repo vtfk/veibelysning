@@ -1,4 +1,3 @@
-
 // Dene funksjonen trengs ikke - Kun for formattering av utskrift i Serial monitor
 char* hoursToString(double h, char* str) {
   int m = int(round(h * 60));
@@ -14,8 +13,10 @@ char* hoursToString(double h, char* str) {
   return str;
 }
 
-// Funksjon som sjekker om det "mørkt"
+// Funksjon som sjekker om det er "mørkt" ute
+// opp = tidspunkt for soloppgang, ned = tidspunkt for solnedgang, timer = time, minutter = minutter i hele timer
 bool isDark(double opp, double ned, int timer, int minutter) {
+  // Logger til Serial monitor for å sjekke at det fungerer
   Serial.print("\nSola opp: ");
   char str[6];
   Serial.print(hoursToString(opp, str));
@@ -23,9 +24,10 @@ bool isDark(double opp, double ned, int timer, int minutter) {
   Serial.print(hoursToString(ned, str));
   Serial.print("\nKlokka akkurat nå er: ");
   Serial.print(String(timer) + ":" + String(minutter));
-  float hm = timer + float(minutter) / 60;
   Serial.print("\n");
-  //Serial.print(hm);
+
+  // Skjøter sammen timer og minutter til en float
+  float hm = timer + float(minutter) / 60;
 
   if (hm < opp || hm > ned) {
     return true;
