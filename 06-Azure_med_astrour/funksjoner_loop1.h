@@ -1,4 +1,3 @@
-#include "esp32-hal-adc.h"
 // Dene funksjonen trengs ikke - Kun for formattering av utskrift i Serial monitor
 char* hoursToString(double h, char* str) {
   int m = int(round(h * 60));
@@ -48,4 +47,8 @@ bool sjekkManuell_lys() {
 
 bool sjekkManuell_styring() {
   return true;
+}
+
+bool sjekkManuell_toppsystem() {
+  return false;
 }

@@ -1,9 +1,5 @@
-#include "pins_is.h"
-#include "esp32-hal-adc.h"
-#include "esp32-hal-gpio.h"
-#include <Arduino.h>
 
-bool lys = false;  // Toggle status lys
+#include <Arduino.h>
 
 // Funksjon som leser "sensordata" og returnerer
 float sensordata() {
@@ -11,15 +7,6 @@ float sensordata() {
   Serial.print("\nStatus på lys er: ");
   Serial.print(analogRead(I0_3));
   Serial.print("\n");
-  // Kodesnutt som togggler lys av/på. Bare for mor skyld...
-  /*
-  if (lys) {
-    digitalWrite(Q0_0, HIGH);
-  } else {
-    digitalWrite(Q0_0, LOW);
-  }
-  lys = !lys;
-*/
   return sensordata;
 }
 
@@ -30,7 +17,7 @@ float lysstatus() {
 
 // Funksjon som trigges av kommando fra Azure IoT-central
 void veilyson() {
-  Serial.write("Nuuuu kjørrrr");
+  Serial.write("Azure: lys PÅ!");
 
   // Løkke for å lage litt action på utgangene :-)
   for (int i = 0; i < 10; i++) {
@@ -44,7 +31,7 @@ void veilyson() {
 }
 
 void veilysoff() {
-  Serial.write("Nuuuu skrudde vi av!!!");
+  Serial.write("Azure: Lys AV!");
 
   // Løkke for å lage litt action på utgangene :-)
   for (int i = 0; i < 10; i++) {
