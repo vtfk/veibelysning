@@ -46,8 +46,12 @@ bool sjekkManuell_lys() {
 }
 
 bool sjekkManuell_styring() {
-  //return true;
-  return false;
+  if (analogRead(I0_2) > 300)
+    {
+      return true;
+    } else {
+      return false;
+    }
 }
 
 bool sjekkManuell_toppsystem() {

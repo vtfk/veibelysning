@@ -36,11 +36,14 @@ Slik ser config.h ut:
 #define conf_DEVICE_KEY "<device-key>"
 ```
 
-## Tilpassing og justering til eget bruk
-Info kommer
+## Oversikt over porter
+Q0_0 - Utgang: Lysdiode som indikerer at utgang er på for testformål (0V - 5V)
+R0_8 - Utgang: Rele som styrer lysene (0V - 250V)
+I0_5 - Inngang: Bryter - Manuell lys av/på
+I0_2 - Inngang: Bryter - Manuell styring av/på
 
-### Kjøre egne funksjoner
-Info kommer
+## Tilpassing og justering til eget bruk
+I filene funksjoner_loop1.h og kommandoer_azure.h ligger det funksjoner som er tilpasset eget bruk.
 
 ### Telemetri og dataoverføring
 Info kommer

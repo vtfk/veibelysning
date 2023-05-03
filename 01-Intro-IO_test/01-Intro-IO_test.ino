@@ -24,12 +24,12 @@ void loop() {
   Serial.write("Analog inngang har verdien: ");
   Serial.print(analogRead(I0_5));
   Serial.write("\n");
-  delay(500);
+  delay(2000);
 
   // Utganger skrus av
   Serial.write("Utganger skrur seg AV\n");
   digitalWrite(Q0_0, LOW);
   digitalWrite(R0_8, LOW);
   analogWrite(A0_2, 0);
-  delay(500);
+  delay(2000);
 }

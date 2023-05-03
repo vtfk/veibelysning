@@ -65,7 +65,6 @@
 #include <time.h>
 
 // Egne bibliotek og innstillinger
-// #include "./funksjoner.h"
 #include <ESP32Time.h>
 #include <SolarCalculator.h>
 #include "./config.h"
@@ -386,7 +385,7 @@ void setup() {
   set_logging_function(logging_function);
 
   connect_to_wifi();
-  sync_device_clock_with_ntp_server();
+  sync_device_clock_with_ntp_server(); // <-- Sjekk denne??
 
   azure_pnp_init();
 
@@ -498,9 +497,11 @@ void loop1() {
     if (isD) {
       Serial.print("Automatisk styring aktiv - Lampestatus: PÅ!\n");
       digitalWrite(Q0_0, HIGH);
+      digitalWrite(R0_8, HIGH);
     } else {
       Serial.print("Automatisk styring aktiv - Lampestatus AV!\n");
       digitalWrite(Q0_0, LOW);
+      digitalWrite(R0_8, LOW);
     }
   }
     
@@ -508,14 +509,16 @@ void loop1() {
     if(manuell_lys){
       Serial.print("Manuell styring aktiv - Lampestatus: PÅ!\n");
       digitalWrite(Q0_0, HIGH);
+      digitalWrite(R0_8, HIGH);
     } else {
       Serial.print("Manuell styring aktiv - Lampestatus AV!\n");
       digitalWrite(Q0_0, LOW);
+      digitalWrite(R0_8, LOW);
     }
   }
 
   if (manuell_toppsystem) {
-    Serial.print("Toppsystem aktivt!\n");
+    Serial.print("Toppsystem styring aktivt!\n");
   }
 
   delay(5000); // Vent 5 sekunder før neste sjekk
@@ -534,7 +537,8 @@ void loop1() {
 static void sync_device_clock_with_ntp_server() {
   LogInfo("Setting time using SNTP");
 
-  configTime(GMT_OFFSET_SECS, GMT_OFFSET_SECS_DST, NTP_SERVERS);
+  //configTime(GMT_OFFSET_SECS, GMT_OFFSET_SECS_DST, NTP_SERVERS); // Dropper denne
+  configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);  // Bruker ESP32Time.h for å synkronisere klokka
   time_t now = time(NULL);
   while (now < UNIX_TIME_NOV_13_2017) {
     delay(500);
