@@ -15,7 +15,7 @@ char* hoursToString(double h, char* str) {
 
 // Funksjon som sjekker om det er "mørkt" ute
 // opp = tidspunkt for soloppgang, ned = tidspunkt for solnedgang, timer = time, minutter = minutter i hele timer
-bool isDark(double opp, double ned, int timer, int minutter) {
+bool sjekkIsDark(double opp, double ned, int timer, int minutter) {
   // Logger til Serial monitor for å sjekke at det fungerer
   Serial.print("\nSola opp: ");
   char str[6];
@@ -37,7 +37,7 @@ bool isDark(double opp, double ned, int timer, int minutter) {
 }
 
 // Må kobles til bryter for å fungere skikelig
-bool sjekkManuell_lys() {
+bool sjekkManuell_lux() {
   if (analogRead(I0_5) > 300)
     {
       return true;

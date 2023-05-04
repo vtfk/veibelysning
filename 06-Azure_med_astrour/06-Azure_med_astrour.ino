@@ -83,9 +83,9 @@ int year, month, day;
 double transit, sunrise, sunset, c_dawn, c_dusk;
 
 // Globale "tilstander"
-bool isD = false;
+bool isDark = false;
 bool manuell_styring = true;
-bool manuell_lys = false;
+bool manuell_lux = false;
 bool manuell_toppsystem = false;
 bool door_open = false;
 
@@ -478,9 +478,9 @@ void loop1() {
   calcSunriseSunset(year, month, day, latitude, longitude, transit, sunrise, sunset);
   
   // Sjekker tilstanden til lysstyringen.
-  isD = isDark(sunrise + utc_offset, sunset + utc_offset, rtc.getHour(true), rtc.getMinute());
+  isDark = sjekkIsDark(sunrise + utc_offset, sunset + utc_offset, rtc.getHour(true), rtc.getMinute());
   manuell_styring = sjekkManuell_styring(); // Erstatt med true/false for å teste
-  manuell_lys = sjekkManuell_lys(); // Erstatt med true/false for å teste
+  manuell_lux = sjekkManuell_lux(); // Erstatt med true/false for å teste
   manuell_toppsystem = sjekkManuell_toppsystem();
 
   delay(1000);  // Vent 1 sekund
@@ -496,7 +496,7 @@ void loop1() {
 
   // Sjekker isD (isDark()) om det er natt eller dag og tenner/slukker utgang
   if (!manuell_styring && !manuell_toppsystem) {
-    if (true) {
+    if (isDark) {
       Serial.print("Automatisk styring aktiv - Lampestatus: PÅ!\n");
       digitalWrite(Q0_0, HIGH);
       digitalWrite(R0_8, HIGH);
@@ -508,7 +508,7 @@ void loop1() {
   }
     
   if (manuell_styring) {
-    if(manuell_lys){
+    if(manuell_lux){
       Serial.print("Manuell styring aktiv - Lampestatus: PÅ!\n");
       digitalWrite(Q0_0, HIGH);
       digitalWrite(R0_8, HIGH);
