@@ -36,6 +36,7 @@ bool isDark(double opp, double ned, int timer, int minutter) {
   }
 }
 
+// Må kobles til bryter for å fungere skikelig
 bool sjekkManuell_lys() {
   if (analogRead(I0_5) > 300)
     {
@@ -45,6 +46,7 @@ bool sjekkManuell_lys() {
     }
 }
 
+// Må kobles til bryter for å fungere skikelig
 bool sjekkManuell_styring() {
   if (analogRead(I0_2) > 500)
     {

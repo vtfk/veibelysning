@@ -23,7 +23,7 @@ Dette eksempelet er en modifisert utgave av [ESP32-veiledningen til Azure SDK fo
 
 For at programmet skal fungere må det opprettes en fil som heter config.h. Denne må inneholde SSID og passord til det trådløse nettet som skal tilkobles.
 
-I tillegg ligger det miljøvariabler (SSID, PASSORD og tilkoblingsinformasjon til Azure-central) i en egen fil som heter config.h. Denne filen må ligge i samme mappe som programmet og må inkluderes i hovedfilen ```05-Tilkobling_Azure_IoT-central.ino```.
+I tillegg ligger det miljøvariabler (SSID, PASSORD og tilkoblingsinformasjon til Azure-central) i en egen fil som heter config.h. Denne filen må ligge i samme mappe som programmet og må inkluderes i hovedfilen ```06-Tilkobling_Azure_IoT-central.ino```.
 
 Slik ser config.h ut:
 

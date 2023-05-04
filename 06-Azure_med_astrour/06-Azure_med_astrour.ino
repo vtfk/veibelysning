@@ -479,8 +479,8 @@ void loop1() {
   
   // Sjekker tilstanden til lysstyringen.
   isD = isDark(sunrise + utc_offset, sunset + utc_offset, rtc.getHour(true), rtc.getMinute());
-  manuell_styring = false;// sjekkManuell_styring(); Midlertidig deaktivert
-  manuell_lys = false; // sjekkManuell_lys(); Midlertidig deaktivert
+  manuell_styring = sjekkManuell_styring(); // Erstatt med true/false for å teste
+  manuell_lys = sjekkManuell_lys(); // Erstatt med true/false for å teste
   manuell_toppsystem = sjekkManuell_toppsystem();
 
   delay(1000);  // Vent 1 sekund
@@ -496,7 +496,7 @@ void loop1() {
 
   // Sjekker isD (isDark()) om det er natt eller dag og tenner/slukker utgang
   if (!manuell_styring && !manuell_toppsystem) {
-    if (isD) {
+    if (true) {
       Serial.print("Automatisk styring aktiv - Lampestatus: PÅ!\n");
       digitalWrite(Q0_0, HIGH);
       digitalWrite(R0_8, HIGH);
