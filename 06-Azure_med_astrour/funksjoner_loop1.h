@@ -46,7 +46,7 @@ bool sjekkManuell_lys() {
 }
 
 bool sjekkManuell_styring() {
-  if (analogRead(I0_2) > 300)
+  if (analogRead(I0_2) > 500)
     {
       return true;
     } else {

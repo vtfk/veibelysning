@@ -37,19 +37,19 @@
 #define SAMPLE_TOTAL_STORAGE_PROPERTY_VALUE 4096
 #define SAMPLE_TOTAL_MEMORY_PROPERTY_VALUE 8192
 
-#define TELEMETRY_PROP_NAME_TEMPERATURE "temperature"
+#define TELEMETRY_PROP_NAME_LUX "lux"
 #define TELEMETRY_PROP_NAME_HUMIDITY "humidity"
-#define TELEMETRY_PROP_NAME_LIGHT "light"
-#define TELEMETRY_PROP_NAME_PRESSURE "pressure"
-#define TELEMETRY_PROP_NAME_ALTITUDE "altitude"
-#define TELEMETRY_PROP_NAME_MAGNETOMETERX "magnetometerX"
-#define TELEMETRY_PROP_NAME_MAGNETOMETERY "magnetometerY"
-#define TELEMETRY_PROP_NAME_MAGNETOMETERZ "magnetometerZ"
-#define TELEMETRY_PROP_NAME_PITCH "pitch"
-#define TELEMETRY_PROP_NAME_ROLL "roll"
-#define TELEMETRY_PROP_NAME_ACCELEROMETERX "accelerometerX"
-#define TELEMETRY_PROP_NAME_ACCELEROMETERY "accelerometerY"
-#define TELEMETRY_PROP_NAME_ACCELEROMETERZ "accelerometerZ"
+// #define TELEMETRY_PROP_NAME_LIGHT "light"
+// #define TELEMETRY_PROP_NAME_PRESSURE "pressure"
+// #define TELEMETRY_PROP_NAME_ALTITUDE "altitude"
+// #define TELEMETRY_PROP_NAME_MAGNETOMETERX "magnetometerX"
+// #define TELEMETRY_PROP_NAME_MAGNETOMETERY "magnetometerY"
+// #define TELEMETRY_PROP_NAME_MAGNETOMETERZ "magnetometerZ"
+// #define TELEMETRY_PROP_NAME_PITCH "pitch"
+// #define TELEMETRY_PROP_NAME_ROLL "roll"
+// #define TELEMETRY_PROP_NAME_ACCELEROMETERX "accelerometerX"
+// #define TELEMETRY_PROP_NAME_ACCELEROMETERY "accelerometerY"
+// #define TELEMETRY_PROP_NAME_ACCELEROMETERZ "accelerometerZ"
 
 // Her defineres kommandoen fra Azure IoT-central
 static az_span COMMAND_NAME_VEILYS_ON = AZ_SPAN_FROM_STR("VeilysON");
@@ -184,11 +184,7 @@ int azure_pnp_handle_command_request(azure_iot_t* azure_iot, command_request_t c
 // Her trigges de egendefinerte kommandoene
   if (az_span_is_content_equal(command.command_name, COMMAND_NAME_VEILYS_ON))
   {
-    // The payload comes surrounded by quotes, so to remove them we offset the payload by 1 and its
-    // size by 2.
     veilyson(); // Funksjon som kjøres fra funksjoner.h
-    LogInfo(
-        "OLED display: %.*s", az_span_size(command.payload) - 2, az_span_ptr(command.payload) + 1);
     response_code = COMMAND_RESPONSE_CODE_ACCEPTED;
   }
   else if (az_span_is_content_equal(command.command_name, COMMAND_NAME_VEILYS_OFF)) {
@@ -230,41 +226,6 @@ int azure_pnp_handle_properties_update(
 }
 
 /* --- Internal Functions --- */
-static float simulated_get_temperature() { return 21.0; }
-
-static float simulated_get_humidity() { return 12.3; }
-
-static float simulated_get_ambientLight() { return 700.0; }
-
-static void simulated_get_pressure_altitude(float* pressure, float* altitude)
-{
-  *pressure = 55.0;
-  *altitude = 700.0;
-}
-
-static void simulated_get_magnetometer(
-    int32_t* magneticFieldX,
-    int32_t* magneticFieldY,
-    int32_t* magneticFieldZ)
-{
-  *magneticFieldX = 2000;
-  *magneticFieldY = 3000;
-  *magneticFieldZ = 4000;
-}
-
-static void simulated_get_pitch_roll_accel(
-    int32_t* pitch,
-    int32_t* roll,
-    int32_t* accelerationX,
-    int32_t* accelerationY,
-    int32_t* accelerationZ)
-{
-  *pitch = 30;
-  *roll = 90;
-  *accelerationX = 33;
-  *accelerationY = 44;
-  *accelerationZ = 55;
-}
 
 static int generate_telemetry_payload(
     uint8_t* payload_buffer,
@@ -275,18 +236,11 @@ static int generate_telemetry_payload(
   az_result rc;
   az_span payload_buffer_span = az_span_create(payload_buffer, payload_buffer_size);
   az_span json_span;
-  float temperature, humidity, light, pressure, altitude;
-  int32_t magneticFieldX, magneticFieldY, magneticFieldZ;
-  int32_t pitch, roll, accelerationX, accelerationY, accelerationZ;
+  float lux, humidity;
 
   // Acquiring the simulated data.
-  //temperature = simulated_get_temperature();
-  temperature = sensordata(); // Funksjon for å hente temperatur fra funksjoner.h
+  lux = sensordata(); // Funksjon for å hente temperatur fra funksjoner.h
   humidity = lysstatus();
-  light = simulated_get_ambientLight();
-  simulated_get_pressure_altitude(&pressure, &altitude);
-  simulated_get_magnetometer(&magneticFieldX, &magneticFieldY, &magneticFieldZ);
-  simulated_get_pitch_roll_accel(&pitch, &roll, &accelerationX, &accelerationY, &accelerationZ);
 
   rc = az_json_writer_init(&jw, payload_buffer_span, NULL);
   EXIT_IF_AZ_FAILED(rc, RESULT_ERROR, "Failed initializing json writer for telemetry.");
@@ -294,93 +248,18 @@ static int generate_telemetry_payload(
   rc = az_json_writer_append_begin_object(&jw);
   EXIT_IF_AZ_FAILED(rc, RESULT_ERROR, "Failed setting telemetry json root.");
 
-  rc = az_json_writer_append_property_name(&jw, AZ_SPAN_FROM_STR(TELEMETRY_PROP_NAME_TEMPERATURE));
+  rc = az_json_writer_append_property_name(&jw, AZ_SPAN_FROM_STR(TELEMETRY_PROP_NAME_LUX));
   EXIT_IF_AZ_FAILED(
-      rc, RESULT_ERROR, "Failed adding temperature property name to telemetry payload.");
-  rc = az_json_writer_append_double(&jw, temperature, DOUBLE_DECIMAL_PLACE_DIGITS);
+      rc, RESULT_ERROR, "Failed adding lux property name to telemetry payload.");
+  rc = az_json_writer_append_double(&jw, lux, DOUBLE_DECIMAL_PLACE_DIGITS);
   EXIT_IF_AZ_FAILED(
-      rc, RESULT_ERROR, "Failed adding temperature property value to telemetry payload. ");
+      rc, RESULT_ERROR, "Failed adding lux property value to telemetry payload. ");
 
   rc = az_json_writer_append_property_name(&jw, AZ_SPAN_FROM_STR(TELEMETRY_PROP_NAME_HUMIDITY));
   EXIT_IF_AZ_FAILED(rc, RESULT_ERROR, "Failed adding humidity property name to telemetry payload.");
   rc = az_json_writer_append_double(&jw, humidity, DOUBLE_DECIMAL_PLACE_DIGITS);
   EXIT_IF_AZ_FAILED(
       rc, RESULT_ERROR, "Failed adding humidity property value to telemetry payload. ");
-
-  rc = az_json_writer_append_property_name(&jw, AZ_SPAN_FROM_STR(TELEMETRY_PROP_NAME_LIGHT));
-  EXIT_IF_AZ_FAILED(rc, RESULT_ERROR, "Failed adding light property name to telemetry payload.");
-  rc = az_json_writer_append_double(&jw, light, DOUBLE_DECIMAL_PLACE_DIGITS);
-  EXIT_IF_AZ_FAILED(rc, RESULT_ERROR, "Failed adding light property value to telemetry payload.");
-
-  rc = az_json_writer_append_property_name(&jw, AZ_SPAN_FROM_STR(TELEMETRY_PROP_NAME_PRESSURE));
-  EXIT_IF_AZ_FAILED(rc, RESULT_ERROR, "Failed adding pressure property name to telemetry payload.");
-  rc = az_json_writer_append_double(&jw, pressure, DOUBLE_DECIMAL_PLACE_DIGITS);
-  EXIT_IF_AZ_FAILED(
-      rc, RESULT_ERROR, "Failed adding pressure property value to telemetry payload.");
-
-  rc = az_json_writer_append_property_name(&jw, AZ_SPAN_FROM_STR(TELEMETRY_PROP_NAME_ALTITUDE));
-  EXIT_IF_AZ_FAILED(rc, RESULT_ERROR, "Failed adding altitude property name to telemetry payload.");
-  rc = az_json_writer_append_double(&jw, altitude, DOUBLE_DECIMAL_PLACE_DIGITS);
-  EXIT_IF_AZ_FAILED(
-      rc, RESULT_ERROR, "Failed adding altitude property value to telemetry payload.");
-
-  rc = az_json_writer_append_property_name(
-      &jw, AZ_SPAN_FROM_STR(TELEMETRY_PROP_NAME_MAGNETOMETERX));
-  EXIT_IF_AZ_FAILED(
-      rc, RESULT_ERROR, "Failed adding magnetometer(X) property name to telemetry payload.");
-  rc = az_json_writer_append_int32(&jw, magneticFieldX);
-  EXIT_IF_AZ_FAILED(
-      rc, RESULT_ERROR, "Failed adding magnetometer(X) property value to telemetry payload.");
-
-  rc = az_json_writer_append_property_name(
-      &jw, AZ_SPAN_FROM_STR(TELEMETRY_PROP_NAME_MAGNETOMETERY));
-  EXIT_IF_AZ_FAILED(
-      rc, RESULT_ERROR, "Failed adding magnetometer(Y) property name to telemetry payload.");
-  rc = az_json_writer_append_int32(&jw, magneticFieldY);
-  EXIT_IF_AZ_FAILED(
-      rc, RESULT_ERROR, "Failed adding magnetometer(Y) property value to telemetry payload.");
-
-  rc = az_json_writer_append_property_name(
-      &jw, AZ_SPAN_FROM_STR(TELEMETRY_PROP_NAME_MAGNETOMETERZ));
-  EXIT_IF_AZ_FAILED(
-      rc, RESULT_ERROR, "Failed adding magnetometer(Z) property name to telemetry payload.");
-  rc = az_json_writer_append_int32(&jw, magneticFieldZ);
-  EXIT_IF_AZ_FAILED(
-      rc, RESULT_ERROR, "Failed adding magnetometer(Z) property value to telemetry payload.");
-
-  rc = az_json_writer_append_property_name(&jw, AZ_SPAN_FROM_STR(TELEMETRY_PROP_NAME_PITCH));
-  EXIT_IF_AZ_FAILED(rc, RESULT_ERROR, "Failed adding pitch property name to telemetry payload.");
-  rc = az_json_writer_append_int32(&jw, pitch);
-  EXIT_IF_AZ_FAILED(rc, RESULT_ERROR, "Failed adding pitch property value to telemetry payload.");
-
-  rc = az_json_writer_append_property_name(&jw, AZ_SPAN_FROM_STR(TELEMETRY_PROP_NAME_ROLL));
-  EXIT_IF_AZ_FAILED(rc, RESULT_ERROR, "Failed adding roll property name to telemetry payload.");
-  rc = az_json_writer_append_int32(&jw, roll);
-  EXIT_IF_AZ_FAILED(rc, RESULT_ERROR, "Failed adding roll property value to telemetry payload.");
-
-  rc = az_json_writer_append_property_name(
-      &jw, AZ_SPAN_FROM_STR(TELEMETRY_PROP_NAME_ACCELEROMETERX));
-  EXIT_IF_AZ_FAILED(
-      rc, RESULT_ERROR, "Failed adding acceleration(X) property name to telemetry payload.");
-  rc = az_json_writer_append_int32(&jw, accelerationX);
-  EXIT_IF_AZ_FAILED(
-      rc, RESULT_ERROR, "Failed adding acceleration(X) property value to telemetry payload.");
-
-  rc = az_json_writer_append_property_name(
-      &jw, AZ_SPAN_FROM_STR(TELEMETRY_PROP_NAME_ACCELEROMETERY));
-  EXIT_IF_AZ_FAILED(
-      rc, RESULT_ERROR, "Failed adding acceleration(Y) property name to telemetry payload.");
-  rc = az_json_writer_append_int32(&jw, accelerationY);
-  EXIT_IF_AZ_FAILED(
-      rc, RESULT_ERROR, "Failed adding acceleration(Y) property value to telemetry payload.");
-
-  rc = az_json_writer_append_property_name(
-      &jw, AZ_SPAN_FROM_STR(TELEMETRY_PROP_NAME_ACCELEROMETERZ));
-  EXIT_IF_AZ_FAILED(
-      rc, RESULT_ERROR, "Failed adding acceleration(Z) property name to telemetry payload.");
-  rc = az_json_writer_append_int32(&jw, accelerationZ);
-  EXIT_IF_AZ_FAILED(
-      rc, RESULT_ERROR, "Failed adding acceleration(Z) property value to telemetry payload.");
 
   rc = az_json_writer_append_end_object(&jw);
   EXIT_IF_AZ_FAILED(rc, RESULT_ERROR, "Failed closing telemetry json payload.");

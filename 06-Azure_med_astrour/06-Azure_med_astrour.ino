@@ -479,9 +479,11 @@ void loop1() {
   
   // Sjekker tilstanden til lysstyringen.
   isD = isDark(sunrise + utc_offset, sunset + utc_offset, rtc.getHour(true), rtc.getMinute());
-  manuell_styring = sjekkManuell_styring();
-  manuell_lys = sjekkManuell_lys();
+  manuell_styring = false;// sjekkManuell_styring(); Midlertidig deaktivert
+  manuell_lys = false; // sjekkManuell_lys(); Midlertidig deaktivert
   manuell_toppsystem = sjekkManuell_toppsystem();
+
+  delay(1000);  // Vent 1 sekund
 
   // Logging til Serial for debugging
   char str[6];
@@ -521,7 +523,7 @@ void loop1() {
     Serial.print("Toppsystem styring aktivt!\n");
   }
 
-  delay(5000); // Vent 5 sekunder før neste sjekk
+  delay(3000); // Vent 3 sekunder før neste sjekk
 }
 
 

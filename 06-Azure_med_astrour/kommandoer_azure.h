@@ -1,4 +1,3 @@
-
 #include <Arduino.h>
 
 // Funksjon som leser "sensordata" og returnerer

@@ -59,7 +59,7 @@ void azure_pnp_set_telemetry_frequency(size_t frequency_in_seconds);
  * Central.
  * @remark    The IoT Plug and Play template implemented by this device is specific to the
  *            Espressif ESP32 Azure IoT Kit board, which contains several sensors.
- *            The template defines telemetry data points for temperature, humidity,
+ *            The template defines telemetry data points for lux, humidity,
  *            pressure, altitude, luminosity, magnetic field, rolling and pitch angles,
  *            as well as acceleration. All of these data are read from the board sensors and sent to
  *            Azure IoT Central when `azure_pnp_send_telemetry` is called.
