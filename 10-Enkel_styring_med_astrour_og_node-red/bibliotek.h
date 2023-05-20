@@ -14,10 +14,8 @@ char* hoursToString(double h, char* str) {
   return str;
 }
 
-// Funksjon som sjekker om det er "mørkt" ute
-// opp = tidspunkt for soloppgang, ned = tidspunkt for solnedgang, timer = time, minutter = minutter i hele timer
-bool sjekkIsDark(double opp, double ned, int timer, int minutter) {
-  // Logger til Serial monitor for å sjekke at det fungerer
+// Funksjon som sjekker om det "mørkt"
+bool isDark(double opp, double ned, int timer, int minutter) {
   Serial.print("\nSola opp: ");
   char str[6];
   Serial.print(hoursToString(opp, str));
@@ -25,10 +23,9 @@ bool sjekkIsDark(double opp, double ned, int timer, int minutter) {
   Serial.print(hoursToString(ned, str));
   Serial.print("\nKlokka akkurat nå er: ");
   Serial.print(String(timer) + ":" + String(minutter));
-  Serial.print("\n");
-
-  // Skjøter sammen timer og minutter til en float
   float hm = timer + float(minutter) / 60;
+  Serial.print("\n");
+  //Serial.print(hm);
 
   if (hm < opp || hm > ned) {
     return true;
@@ -36,24 +33,3 @@ bool sjekkIsDark(double opp, double ned, int timer, int minutter) {
     return false;
   }
 }
-
-// Må kobles til bryter for å fungere skikelig
-bool sjekkManuell_lux() {
-  if (analogRead(I0_5) > 300)
-    {
-      return true;
-    } else {
-      return false;
-    }
-}
-
-// Må kobles til bryter for å fungere skikelig
-bool sjekkManuell_styring() {
-  if (analogRead(I0_2) > 500)
-    {
-      return true;
-    } else {
-      return false;
-    }
-}
-

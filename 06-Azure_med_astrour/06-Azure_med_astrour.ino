@@ -69,6 +69,7 @@
 #include <SolarCalculator.h>
 #include "./config.h"
 #include "./funksjoner_loop1.h"
+// #include "./kommandoer_azure.h"
 
 // NTP-innstillinger
 long gmtOffset_sec = 3600;
@@ -431,7 +432,7 @@ void setup() {
   LogInfo("Azure IoT client initialized (state=%d)", azure_iot.state);
 
   // Egen config
-  configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);  // Ikke skru av nettet før man er sikker på at denne kommanoden har kjørt
+  //configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);  // Ikke skru av nettet før man er sikker på at denne kommanoden har kjørt
 }
 
 void loop() {
@@ -479,9 +480,9 @@ void loop1() {
   
   // Sjekker tilstanden til lysstyringen.
   isDark = sjekkIsDark(sunrise + utc_offset, sunset + utc_offset, rtc.getHour(true), rtc.getMinute());
-  manuell_styring = sjekkManuell_styring(); // Erstatt med true/false for å teste
+  manuell_styring = false; // sjekkManuell_styring(); // Erstatt med true/false for å teste
   manuell_lux = sjekkManuell_lux(); // Erstatt med true/false for å teste
-  manuell_toppsystem = sjekkManuell_toppsystem();
+  manuell_toppsystem = false;
 
   delay(1000);  // Vent 1 sekund
 
@@ -496,7 +497,7 @@ void loop1() {
 
   // Sjekker isD (isDark()) om det er natt eller dag og tenner/slukker utgang
   if (!manuell_styring && !manuell_toppsystem) {
-    if (isDark) {
+    if (isDark) { // isDark er erstattet med true for å teste
       Serial.print("Automatisk styring aktiv - Lampestatus: PÅ!\n");
       digitalWrite(Q0_0, HIGH);
       digitalWrite(R0_8, HIGH);

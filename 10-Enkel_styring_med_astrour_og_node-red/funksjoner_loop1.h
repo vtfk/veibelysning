@@ -56,4 +56,3 @@ bool sjekkManuell_styring() {
       return false;
     }
 }
-

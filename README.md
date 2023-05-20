@@ -29,3 +29,4 @@ Det er ikke alle USB-kabler som fungerer. Sørg for at du bruker en som er bereg
 | [04 - Enkel styring med astronomisk klokke](./04-Enkel_styring_med_astrour/) | Styring av utganger med astronomisk klokke |
 | [05 - Basistilkobling mot Azure IoT-central](./05-Basistilkobling_mot_Azure_IoT-central/) | Enkel tilkobling mot Azure IoT-central |
 | [06 - Styring med astronomisk klokke og Azure IoT-central](./06-Azure_med_astrour/) | Styring av utganger med astronomisk klokke og Azure IoT-central |
+| [10 - Styring med astronomisk klokke og Node-RED](./10-Enkel_styring_med_astrour_og_node-red/) | Styring av utganger med astronomisk klokke og Node-RED |

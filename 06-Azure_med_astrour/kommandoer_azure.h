@@ -1,5 +1,7 @@
 #include <Arduino.h>
 
+boolean toppsystem_aktivert = false;
+
 // Funksjon som leser "sensordata" og returnerer
 float sensordata() {
   float sensordata = analogRead(I0_5);
@@ -17,6 +19,7 @@ float lysstatus() {
 // Funksjon som trigges av kommando fra Azure IoT-central
 void veilyson() {
   Serial.write("Azure: lys PÅ!");
+  toppsystem_aktivert = true;
 
   // Løkke for å lage litt action på utgangene :-)
   for (int i = 0; i < 10; i++) {
@@ -31,6 +34,7 @@ void veilyson() {
 
 void veilysoff() {
   Serial.write("Azure: Lys AV!");
+  toppsystem_aktivert = false;
 
   // Løkke for å lage litt action på utgangene :-)
   for (int i = 0; i < 10; i++) {
