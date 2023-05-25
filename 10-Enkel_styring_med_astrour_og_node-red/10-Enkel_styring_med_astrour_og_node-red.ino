@@ -233,7 +233,7 @@ void loop1() {
   veilysData["manuell_styring"] = manuell_styring;
   veilysData["dør_lukket"] = true;
 
-  char buffer[100];
+  char meldingsobjekt[100];
   serializeJson(veilysData, meldingsobjekt);
 
   Serial.println(meldingsobjekt);
