@@ -386,7 +386,7 @@ void setup() {
   set_logging_function(logging_function);
 
   connect_to_wifi();
-  sync_device_clock_with_ntp_server(); // <-- Sjekk denne??
+  sync_device_clock_with_ntp_server();  // <-- Sjekk denne??
 
   azure_pnp_init();
 
@@ -465,7 +465,7 @@ void loop() {
   }
 }
 
-// Løkke som kjører på kjerne 2 i PLC 
+// Løkke som kjører på kjerne 2 i PLC
 // Her ligger logikk for lysstyring og klokke
 // Loope1 kjører uavhengig av Azure IoT-Central og fungerer helt fint uten nettverk
 
@@ -477,11 +477,11 @@ void loop1() {
   Serial.print(rtc.getTimeDate(true) + "\n");
   calcCivilDawnDusk(year, month, day, latitude, longitude, transit, c_dawn, c_dusk);
   calcSunriseSunset(year, month, day, latitude, longitude, transit, sunrise, sunset);
-  
+
   // Sjekker tilstanden til lysstyringen.
   isDark = sjekkIsDark(sunrise + utc_offset, sunset + utc_offset, rtc.getHour(true), rtc.getMinute());
-  manuell_styring = false; // sjekkManuell_styring(); // Erstatt med true/false for å teste
-  manuell_lux = sjekkManuell_lux(); // Erstatt med true/false for å teste
+  manuell_styring = false;           // sjekkManuell_styring(); // Erstatt med true/false for å teste
+  manuell_lux = sjekkManuell_lux();  // Erstatt med true/false for å teste
   manuell_toppsystem = false;
 
   delay(1000);  // Vent 1 sekund
@@ -497,7 +497,7 @@ void loop1() {
 
   // Sjekker isD (isDark()) om det er natt eller dag og tenner/slukker utgang
   if (!manuell_styring && !manuell_toppsystem) {
-    if (isDark) { // isDark er erstattet med true for å teste
+    if (isDark) {  // isDark er erstattet med true for å teste
       Serial.print("Automatisk styring aktiv - Lampestatus: PÅ!\n");
       digitalWrite(Q0_0, HIGH);
       digitalWrite(R0_8, HIGH);
@@ -507,9 +507,9 @@ void loop1() {
       digitalWrite(R0_8, LOW);
     }
   }
-    
+
   if (manuell_styring) {
-    if(manuell_lux){
+    if (manuell_lux) {
       Serial.print("Manuell styring aktiv - Lampestatus: PÅ!\n");
       digitalWrite(Q0_0, HIGH);
       digitalWrite(R0_8, HIGH);
@@ -524,7 +524,7 @@ void loop1() {
     Serial.print("Toppsystem styring aktivt!\n");
   }
 
-  delay(3000); // Vent 3 sekunder før neste sjekk
+  delay(3000);  // Vent 3 sekunder før neste sjekk
 }
 
 

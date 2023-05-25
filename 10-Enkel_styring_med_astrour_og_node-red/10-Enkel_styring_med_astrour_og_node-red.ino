@@ -27,18 +27,19 @@
 // #include "./bibliotek.h"
 #include "./funksjoner_loop1.h"
 #include <PubSubClient.h>
+#include <ArduinoJson.h>
 
 // Henter og setter nødvendige parameter
-const char* ssid = SSID;
-const char* password = PASSWORD;
+const char *ssid = SSID;
+const char *password = PASSWORD;
 
 long gmtOffset_sec = 3600;
 int daylightOffset_sec = 3600;
-const char* ntpServer = "no.pool.ntp.org";
+const char *ntpServer = "no.pool.ntp.org";
 
 // Bredde- og lengdegrad for Helgeroa ;-) (Brukes for å beregne solopgang og solnedgang)
-double latitude = 58.99019;
-double longitude = 9.879223;
+double latitude = PLC_POS_LAT;
+double longitude = PLC_POS_LONG;
 int utc_offset = 2;
 int year, month, day;
 double transit, sunrise, sunset, c_dawn, c_dusk;
@@ -55,16 +56,11 @@ bool door_open = false;
 
 // Your MQTT broker ID
 const char *mqttBroker = "test.mosquitto.org";
-// const char *mqttBroker = "broker.hivemq.com";
-// const char *mqttBroker = "412e77827de64e77b8472e234b05ab9d.s2.eu.hivemq.cloud";
-// const char *mqttBroker = "127.0.0.1";
 const int mqttPort = 1883;
-//const char* mqtt_username = "fuzzbin";
-// const char* mqtt_password = "Veilys123";
 
 // MQTT topics
-const char *publishTopic = "VTFK/test";
-const char *subscribeTopic = "VTFK/test";
+const char *publishTopic = "VTFK/status";
+const char *subscribeTopic = "VTFK/man_styring";
 
 unsigned long lastMsg = 0;
 #define MSG_BUFFER_SIZE (5)
@@ -74,49 +70,35 @@ WiFiClient wifiClient;
 PubSubClient client(wifiClient);
 
 // Callback function whenever an MQTT message is received
-void callback(char *topic, byte *payload, unsigned int length)
-{
+void callback(char *topic, byte *payload, unsigned int length) {
   Serial.print("Message arrived [");
   Serial.print(topic);
   Serial.print("] ");
   String message;
-  for (int i = 0; i < length; i++)
-  {
+  for (int i = 0; i < length; i++) {
     message += (char)payload[i];
   }
   Serial.print(message);
 
   // Switch on the LED if 'ON' was received
-  if (message == "M1") {
-    Serial.println("Blinkemøsnter 1\n");
-    for (int i = 0; i < 10; i++) {
-      digitalWrite(Q0_0, HIGH);
-      digitalWrite(R0_8, HIGH);
-      delay(50);
-      digitalWrite(Q0_0, LOW);
-      digitalWrite(R0_8, LOW);
-      delay(50);
-    }
+  if (message == "Toggle_manuell") {
+    manuell_styring = !manuell_styring;
   }
-  else if (message == "M2") 
-  {
-    Serial.println("Blinkemøsnter 2\n");
-    for (int i = 0; i < 6; i++) {
-      digitalWrite(Q0_0, HIGH);
-      digitalWrite(R0_8, HIGH);
-      delay(200);
-      digitalWrite(Q0_0, LOW);
-      digitalWrite(R0_8, LOW);
-      delay(200);
-    }
+
+  if (message == "Manuell_ON" && manuell_styring) {
+    Serial.println("Manuell - PÅ \n");
+    digitalWrite(Q0_0, HIGH);
+    digitalWrite(R0_8, HIGH);
+  } else if (message == "Manuell_OFF" && manuell_styring) {
+    Serial.println("Manuell - AV \n");
+    digitalWrite(Q0_0, LOW);
+    digitalWrite(R0_8, LOW);
   }
 }
 
-void reconnect()
-{
+void reconnect() {
   // Loop until we're reconnected
-  while (!client.connected())
-  {
+  while (!client.connected()) {
     Serial.print("Attempting MQTT connection...");
 
     // Create a random client ID
@@ -124,14 +106,11 @@ void reconnect()
     clientId += String(random(0xffff), HEX);
 
     // Attempt to connect
-    if (client.connect(clientId.c_str()))
-    {
+    if (client.connect(clientId.c_str())) {
       Serial.println("connected");
       // Subscribe to topic
       client.subscribe(subscribeTopic);
-    }
-    else
-    {
+    } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());
       Serial.println(" try again in 5 seconds");
@@ -165,17 +144,15 @@ void setup() {
 
 void loop() {
 
- // Listen for mqtt message and reconnect if disconnected
-  if (!client.connected())
-  {
+  // Listen for mqtt message and reconnect if disconnected
+  if (!client.connected()) {
     reconnect();
   }
   client.loop();
 
   // publish message after certain time.
   unsigned long now = millis();
-  if (now - lastMsg > 1000)
-  {
+  if (now - lastMsg > 1000) {
     lastMsg = now;
     // Sjekker input og publiserer basert på denne
     if (analogRead(I0_5) < 300) {
@@ -194,7 +171,7 @@ void loop() {
 
 void loop1() {
   Serial.println(rtc.getTime(" x--> %A, %B %d %Y %H:%M:%S\n"));
-  
+
   year = rtc.getYear();
   month = rtc.getMonth() + 1;
   day = rtc.getDay();
@@ -203,11 +180,11 @@ void loop1() {
 
   calcSunriseSunset(year, month, day, latitude, longitude, transit, sunrise, sunset);
 
-  
+
   // Sjekker tilstanden til lysstyringen.
   isDark = sjekkIsDark(sunrise + utc_offset, sunset + utc_offset, rtc.getHour(true), rtc.getMinute());
-  manuell_styring = false; //sjekkManuell_lux(); // sjekkManuell_styring(); // Erstatt med true/false for å teste
-  manuell_lux = false; // sjekkManuell_lux(); // Erstatt med true/false for å teste
+  // manuell_styring = false; //sjekkManuell_lux(); // sjekkManuell_styring(); // Erstatt med true/false for å teste
+  manuell_lux = false;  // sjekkManuell_lux(); // Erstatt med true/false for å teste
   manuell_toppsystem = false;
 
   delay(1000);  // Vent 1 sekund
@@ -223,7 +200,7 @@ void loop1() {
 
   // Sjekker isD (isDark()) om det er natt eller dag og tenner/slukker utgang
   if (!manuell_styring && !manuell_toppsystem) {
-    if (isDark) { // isDark er erstattet med true for å teste
+    if (isDark) {  // isDark er erstattet med true for å teste
       Serial.print("Automatisk styring aktiv - Lampestatus: PÅ!\n");
       digitalWrite(Q0_0, HIGH);
       digitalWrite(R0_8, HIGH);
@@ -233,17 +210,9 @@ void loop1() {
       digitalWrite(R0_8, LOW);
     }
   }
-    
+
   if (manuell_styring) {
-    if(manuell_lux){
-      Serial.print("Manuell styring aktiv - Lampestatus: PÅ!\n");
-      digitalWrite(Q0_0, HIGH);
-      digitalWrite(R0_8, HIGH);
-    } else {
-      Serial.print("Manuell styring aktiv - Lampestatus AV!\n");
-      digitalWrite(Q0_0, LOW);
-      digitalWrite(R0_8, LOW);
-    }
+    Serial.print("Manuell styring aktiv\n");
   }
 
   if (manuell_toppsystem) {
@@ -251,9 +220,24 @@ void loop1() {
   }
   int verdi = analogRead(I0_5);
   int status_lys = analogRead(I0_3);
-  char msg_out[20];
-  sprintf(msg_out, "%d",status_lys);
-  client.publish(publishTopic, msg_out); 
-  delay(3000); // Vent 3 sekunder før neste sjekk
-}
 
+
+  StaticJsonDocument<100> veilysData;
+
+  veilysData["sensorID"] = PLC_ID;
+  // veilysData["PLC_time"] = rtc.getTime();
+  //veilysData["posisjon_lat"] = PLC_POS_LAT;
+  //veilysData["posisjon_lon"] = PLC_POS_LONG;
+  veilysData["lux"] = verdi;
+  veilysData["status_lys"] = status_lys;
+  veilysData["manuell_styring"] = manuell_styring;
+  veilysData["dør_lukket"] = true;
+
+  char buffer[100];
+  serializeJson(veilysData, meldingsobjekt);
+
+  Serial.println(meldingsobjekt);
+
+  client.publish(publishTopic, meldingsobjekt);
+  delay(3000);  // Vent 3 sekunder før neste sjekk
+}
