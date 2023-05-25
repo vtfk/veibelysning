@@ -20,16 +20,19 @@
   Programmet tenner og slukker utgang Q0_0 basert på soloppgang og solnedgang og kommuniserer med en MQTT-broker og NODE-RED
 */
 
+// Importerer nødvendige biblioteker
 #include <WiFi.h>
 #include <ESP32Time.h>
-#include <SolarCalculator.h>
-#include "./config.h"
-// #include "./bibliotek.h"
-#include "./funksjoner_loop1.h"
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
+#include <SolarCalculator.h>
 
-// Henter og setter nødvendige parameter
+// Lokale konfigfiler og bibliotek
+#include "./config.h"
+#include "./funksjoner_loop1.h"
+
+
+// Henter og setter nødvendige parameter fra config.h
 const char *ssid = SSID;
 const char *password = PASSWORD;
 
@@ -49,18 +52,18 @@ ESP32Time rtc(0);
 
 // Globale "tilstander"
 bool isDark = false;
-bool manuell_styring = true;
+bool manuell_styring = false;
 bool manuell_lux = false;
 bool manuell_toppsystem = false;
 bool door_open = false;
 
 // Your MQTT broker ID
-const char *mqttBroker = "test.mosquitto.org";
-const int mqttPort = 1883;
+const char *mqttBroker = MQTT_BROKER;
+const int mqttPort = MQTT_PORT;
 
 // MQTT topics
-const char *publishTopic = "VTFK/status";
-const char *subscribeTopic = "VTFK/man_styring";
+const char *publishTopic = MQTT_PUBLISH_TOPIC;
+const char *subscribeTopic = MQTT_SUBSCRIBE_TOPIC;
 
 unsigned long lastMsg = 0;
 #define MSG_BUFFER_SIZE (5)
@@ -69,7 +72,7 @@ char msg[MSG_BUFFER_SIZE];
 WiFiClient wifiClient;
 PubSubClient client(wifiClient);
 
-// Callback function whenever an MQTT message is received
+// Callbak som kjører kommandoer fra toppsystem
 void callback(char *topic, byte *payload, unsigned int length) {
   Serial.print("Message arrived [");
   Serial.print(topic);
@@ -152,18 +155,11 @@ void loop() {
 
   // publish message after certain time.
   unsigned long now = millis();
-  if (now - lastMsg > 1000) {
+  if (now - lastMsg > 10000) {
     lastMsg = now;
     // Sjekker input og publiserer basert på denne
-    if (analogRead(I0_5) < 300) {
-      Serial.print("Publish message: M1");
-      client.publish(publishTopic, "M1");
-      Serial.print("\n");
-    } else if (analogRead(I0_5) > 700) {
-      Serial.print("Publish message: M2");
-      client.publish(publishTopic, "M2");
-      Serial.print("\n");
-    }
+    //Serial.print("Publish message: M1");
+    client.publish(publishTopic, "Nå er det 10 sekunder siden jeg har publisert");
   }
   delay(1000);
 }
@@ -184,8 +180,8 @@ void loop1() {
   // Sjekker tilstanden til lysstyringen.
   isDark = sjekkIsDark(sunrise + utc_offset, sunset + utc_offset, rtc.getHour(true), rtc.getMinute());
   // manuell_styring = false; //sjekkManuell_lux(); // sjekkManuell_styring(); // Erstatt med true/false for å teste
-  manuell_lux = false;  // sjekkManuell_lux(); // Erstatt med true/false for å teste
-  manuell_toppsystem = false;
+  // manuell_lux = false;  // sjekkManuell_lux(); // Erstatt med true/false for å teste
+  // manuell_toppsystem = false;
 
   delay(1000);  // Vent 1 sekund
 
@@ -218,16 +214,14 @@ void loop1() {
   if (manuell_toppsystem) {
     Serial.print("Toppsystem styring aktivt!\n");
   }
-  int verdi = analogRead(I0_5);
-  int status_lys = analogRead(I0_3);
 
+  int verdi = analogRead(I0_5); // Simulerer lux-verdi
+  int status_lys = analogRead(I0_3); // Leser av status på utgang for lysstyring
 
+  // Lager JSON-objekt som skal sendes til endepunktet
   StaticJsonDocument<100> veilysData;
 
   veilysData["sensorID"] = PLC_ID;
-  // veilysData["PLC_time"] = rtc.getTime();
-  //veilysData["posisjon_lat"] = PLC_POS_LAT;
-  //veilysData["posisjon_lon"] = PLC_POS_LONG;
   veilysData["lux"] = verdi;
   veilysData["status_lys"] = status_lys;
   veilysData["manuell_styring"] = manuell_styring;
