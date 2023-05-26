@@ -31,7 +31,6 @@
 #include "./config.h"
 #include "./funksjoner_loop1.h"
 
-
 // Henter og setter nødvendige parameter fra config.h
 const char *ssid = SSID;
 const char *password = PASSWORD;
@@ -139,10 +138,6 @@ void setup() {
   // setup the mqtt server and callback
   client.setServer(mqttBroker, mqttPort);
   client.setCallback(callback);
-
-  //disconnect WiFi as it's no longer needed
-  //WiFi.disconnect(true);
-  //WiFi.mode(WIFI_OFF);
 }
 
 void loop() {
@@ -155,15 +150,14 @@ void loop() {
 
   // publish message after certain time.
   unsigned long now = millis();
-  if (now - lastMsg > 10000) {
+  if (now - lastMsg > 60000) {
     lastMsg = now;
     // Sjekker input og publiserer basert på denne
     //Serial.print("Publish message: M1");
-    client.publish(publishTopic, "Nå er det 10 sekunder siden jeg har publisert");
+    // client.publish(publishTopic, "Nå er det 1 minutt siden jeg har publisert");
   }
   delay(1000);
 }
-
 
 void loop1() {
   Serial.println(rtc.getTime(" x--> %A, %B %d %Y %H:%M:%S\n"));
@@ -175,7 +169,6 @@ void loop1() {
   Serial.print(rtc.getTimeDate(true) + "\n");
 
   calcSunriseSunset(year, month, day, latitude, longitude, transit, sunrise, sunset);
-
 
   // Sjekker tilstanden til lysstyringen.
   isDark = sjekkIsDark(sunrise + utc_offset, sunset + utc_offset, rtc.getHour(true), rtc.getMinute());
@@ -219,15 +212,16 @@ void loop1() {
   int status_lys = analogRead(I0_3); // Leser av status på utgang for lysstyring
 
   // Lager JSON-objekt som skal sendes til endepunktet
-  StaticJsonDocument<100> veilysData;
+  StaticJsonDocument<200> veilysData;
 
-  veilysData["sensorID"] = PLC_ID;
+  veilysData["epoch"] = rtc.getEpoch();
+  veilysData["skapID"] = PLC_ID;
   veilysData["lux"] = verdi;
   veilysData["status_lys"] = status_lys;
   veilysData["manuell_styring"] = manuell_styring;
-  veilysData["dør_lukket"] = true;
+  veilysData["dor_lukket"] = true;
 
-  char meldingsobjekt[100];
+  char meldingsobjekt[200];
   serializeJson(veilysData, meldingsobjekt);
 
   Serial.println(meldingsobjekt);
