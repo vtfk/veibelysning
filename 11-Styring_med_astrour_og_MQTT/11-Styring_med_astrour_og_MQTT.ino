@@ -35,18 +35,19 @@
 const char *ssid = SSID;
 const char *password = PASSWORD;
 
-long gmtOffset_sec = 3600;
-int daylightOffset_sec = 3600;
-const char *ntpServer = "no.pool.ntp.org";
+// Klokkkeinnstillinger
+long gmtOffset_sec = 3600; // Tidssone + 1 time
+int daylightOffset_sec = 3600; // Sommertid +1 time - Vintertid +0 timer
+const char *ntpServer = "no.pool.ntp.org"; // Klokkeserver
 
-// Bredde- og lengdegrad for Helgeroa ;-) (Brukes for å beregne solopgang og solnedgang)
+// Parametre som brukes av SolarCalcultaor (Astrouret)
 double latitude = PLC_POS_LAT;
 double longitude = PLC_POS_LONG;
-int utc_offset = 2;
+int utc_offset = (gmtOffset_sec + daylightOffset_sec) / 3600;
 int year, month, day;
 double transit, sunrise, sunset, c_dawn, c_dusk;
 
-//ESP32Time rtc;
+//ESP32Time-objekt: rtc;
 ESP32Time rtc(0);
 
 // Globale "tilstander"
@@ -56,9 +57,11 @@ bool manuell_lux = false;
 bool manuell_toppsystem = false;
 bool door_open = false;
 
-// Your MQTT broker ID
+// Your MQTT-innstillinger
 const char *mqttBroker = MQTT_BROKER;
 const int mqttPort = MQTT_PORT;
+const char *mqttUser = MQTT_USER;
+const char *mqttPassword = MQTT_PASSWORD;
 
 // MQTT topics
 const char *publishTopic = MQTT_PUBLISH_TOPIC;
@@ -133,44 +136,48 @@ void setup() {
   }
   Serial.println(" CONNECTED");
 
-  configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);  // Ikke skru av nettet før man er sikker på at denne kommanoden har kjørt
+  // Stiller klokka ved reboot - Må kjøres på nytt når man skal endre sommer-/vintertid
+  configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
 
-  // setup the mqtt server and callback
+  // Initiering av MQTT (PubSub-klienten)
   client.setServer(mqttBroker, mqttPort);
   client.setCallback(callback);
+
+  delay(10000); // Venter i 10 sekunder slik at klokka blir satt for å unngå av/på av utganger ved boot
 }
 
+// Hovedløkke - kommunikasjon
 void loop() {
 
   // Listen for mqtt message and reconnect if disconnected
   if (!client.connected()) {
     reconnect();
   }
+  // Kall til PubSubClient som prosesserer innkomne og utgående meldinger
   client.loop();
 
-  // publish message after certain time.
+  // Hvis ønskelig kan det publiseres meldinger til faste intervall
   unsigned long now = millis();
   if (now - lastMsg > 60000) {
     lastMsg = now;
-    // Sjekker input og publiserer basert på denne
-    //Serial.print("Publish message: M1");
     // client.publish(publishTopic, "Nå er det 1 minutt siden jeg har publisert");
   }
   delay(1000);
 }
 
+// Hovedløkke - Automatikk
 void loop1() {
-  Serial.println(rtc.getTime(" x--> %A, %B %d %Y %H:%M:%S\n"));
+  Serial.println(rtc.getTime("RTC-tid er: %A, %B %d %Y %H:%M:%S\n"));
 
+  // Setter parametre slik at astrouret kan beregne soloppgang og solnedgang
   year = rtc.getYear();
-  month = rtc.getMonth() + 1;
+  month = rtc.getMonth() + 1;  // +1 siden månedene telles fra 0-11 (!)
   day = rtc.getDay();
-  Serial.print("\nPling plong klokka er: ");
-  Serial.print(rtc.getTimeDate(true) + "\n");
-
+  
+  // Kalkulerer soloppgang og solnedgang for gitt dato
   calcSunriseSunset(year, month, day, latitude, longitude, transit, sunrise, sunset);
 
-  // Sjekker tilstanden til lysstyringen.
+  // Sjekker og setter tilstanden til lysstyringen.
   isDark = sjekkIsDark(sunrise + utc_offset, sunset + utc_offset, rtc.getHour(true), rtc.getMinute());
   // manuell_styring = false; //sjekkManuell_lux(); // sjekkManuell_styring(); // Erstatt med true/false for å teste
   // manuell_lux = false;  // sjekkManuell_lux(); // Erstatt med true/false for å teste
@@ -178,7 +185,7 @@ void loop1() {
 
   delay(1000);  // Vent 1 sekund
 
-  // Logging til Serial for debugging
+  // Logging til Serial for debugging - Fjernes i prod
   char str[6];
   Serial.print("\nTussmørke: ");
   Serial.print(hoursToString(c_dusk + utc_offset, str));
@@ -200,6 +207,7 @@ void loop1() {
     }
   }
 
+  // Logging av status
   if (manuell_styring) {
     Serial.print("Manuell styring aktiv\n");
   }
@@ -208,19 +216,18 @@ void loop1() {
     Serial.print("Toppsystem styring aktivt!\n");
   }
 
+  // Her kan man lese inn sensorverdier og andre inputs
   int verdi = analogRead(I0_5); // Simulerer lux-verdi
   int status_lys = analogRead(I0_3); // Leser av status på utgang for lysstyring
 
-  // Lager JSON-objekt som skal sendes til endepunktet
+  // Lager JSON-objekt som skal sendes til MQTT
   StaticJsonDocument<200> veilysData;
-
   veilysData["epoch"] = rtc.getEpoch();
   veilysData["skapID"] = PLC_ID;
   veilysData["lux"] = verdi;
   veilysData["status_lys"] = status_lys;
   veilysData["manuell_styring"] = manuell_styring;
   veilysData["dor_lukket"] = true;
-
   char meldingsobjekt[200];
   serializeJson(veilysData, meldingsobjekt);
 
