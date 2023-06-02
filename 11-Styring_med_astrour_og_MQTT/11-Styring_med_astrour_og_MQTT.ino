@@ -14,10 +14,12 @@
   1. Wifi - https://github.com/arduino-libraries/WiFi
   2. ESP32Time - https://github.com/fbiego/ESP32Time/tree/main
   3. SolarCalculator - https://github.com/jpb10/SolarCalculator
+  4. PubSubClient - https://pubsubclient.knolleary.net/
+  5. ArduinoJson - https://arduinojson.org/
 
-  I tillegg ligger det miljøvariabler (SSID og PASSORD) i en egen fil som heter config.h. Sjekk README.md for info
+  I tillegg ligger det miljøvariabler i en egen fil som heter config.h. Sjekk README.md for mer info
 
-  Programmet tenner og slukker utgang Q0_0 basert på soloppgang og solnedgang og kommuniserer med en MQTT-broker og NODE-RED
+  Programmet tenner og slukker utgang Q0_0 basert på soloppgang og solnedgang og kommuniserer med en MQTT-broker
 */
 
 // Importerer nødvendige biblioteker
@@ -125,6 +127,7 @@ void reconnect() {
 }
 
 // *********** Egne funksjoner som tidligere lå i loop1.h *****************
+// ************ Rydde i denne delen ***************
 
 // Dene funksjonen brukes kun til debugging - Kun for formattering av utskrift i Serial monitor
 char* hoursToString(double h, char* str) {
@@ -184,6 +187,7 @@ bool sjekkManuell_styring() {
     }
 }
 
+// **************************************************************************
 // **************************************************************************
 
 void setup() {
