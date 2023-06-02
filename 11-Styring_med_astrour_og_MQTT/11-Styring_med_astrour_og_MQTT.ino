@@ -126,7 +126,7 @@ void reconnect() {
   }
 }
 
-// *********** Egne funksjoner som tidligere lå i loop1.h *****************
+// *********** Egne funksjoner som tidligere lå i funksjoner_loop1.h *****************
 // ************ Rydde i denne delen ***************
 
 // Dene funksjonen brukes kun til debugging - Kun for formattering av utskrift i Serial monitor
