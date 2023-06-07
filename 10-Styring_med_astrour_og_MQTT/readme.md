@@ -26,7 +26,6 @@ I0_5 - Inngang: Bryter - Manuell lys av/på
 I0_2 - Inngang: Bryter - Manuell styring av/på
 
 ## Tilpassing og justering til eget bruk
-I filene funksjoner_loop1.h og kommandoer_azure.h ligger det funksjoner som er tilpasset eget bruk.
 
 ### Telemetri og dataoverføring
 Info kommer
