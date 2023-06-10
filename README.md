@@ -23,12 +23,3 @@ I mappene med nummerering 0x-... ligger kode som kommuniserer mot Azure IoT-cent
 
 Det er ikke alle USB-kabler som fungerer. Sørg for at du bruker en som er beregnet for dataoverføring.
 
-| **Mappe** | **Beskrivelse**|
-|----|----|
-| [01 - Intro-IO_test](./01-Intro-IO_test/01-Intro-IO_test.ino) | Boilerplate og enkel funksjonalitetstest av innganger og utganger |
-| [02 - Automatisk styring med klokke](./02-Styring_med_klokke/) | Styring av utganger med enkel klokke |
-| [03 - WiFi og NTP](./03-Wifi_og_NTP/) | Tilkobling med WiFi og lesing av tid/dato fra NTP-server |
-| [04 - Enkel styring med astronomisk klokke](./04-Enkel_styring_med_astrour/) | Styring av utganger med astronomisk klokke |
-| [05 - Basistilkobling mot Azure IoT-central](./05-Basistilkobling_mot_Azure_IoT-central/) | Enkel tilkobling mot Azure IoT-central |
-| [06 - Styring med astronomisk klokke og Azure IoT-central](./06-Azure_med_astrour/) | Styring av utganger med astronomisk klokke og Azure IoT-central |
-| [10 - Styring med astrour og MQTT](./10-Styring_med_astrour_og_MQTT/11-Styring_med_astrour_og_MQTT.ino) | Styring av utganger med astrour og MQTT |
