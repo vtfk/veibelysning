@@ -2,7 +2,8 @@
   Autonom styring av lys med en Industrial Shields PLC ESP32 19R+
 
   All kode må brukes på eget ansvar -  Se mer på https://github.com/vtfk
-  CC BY SA - VTFK 2023
+  
+  Lisens: CC BY SA - VTFK 2023
 
   Koden er kjørt i Arduino IDE v2.0.4
   Husk å bruke v.2.0.7 av industrialshields-esp32 board-biblioteket.
@@ -11,7 +12,7 @@
 
   I dette programmet brukes bibliotekene:
 
-  1. Wifi - https://github.com/arduino-libraries/WiFi
+  1. Ethernet/EthernetUdp - https://github.com/arduino-libraries/Ethernet/tree/master
   2. ESP32Time - https://github.com/fbiego/ESP32Time/tree/main
   3. SolarCalculator - https://github.com/jpb10/SolarCalculator
   4. PubSubClient - https://pubsubclient.knolleary.net/
@@ -19,11 +20,13 @@
 
   I tillegg ligger det miljøvariabler i en egen fil som heter config.h. Sjekk README.md for mer info
 
-  Programmet tenner og slukker utgang Q0_0 basert på soloppgang og solnedgang og kommuniserer med en MQTT-broker
+  Programmet tenner og slukker utgang Q0_0 basert på soloppgang og solnedgang og kommuniserer med en MQTT-broker via Ethernet-gateway 
 */
 
 // Importerer nødvendige biblioteker
-#include <WiFi.h>
+// #include <SPI.h>
+#include <Ethernet.h>
+#include <EthernetUdp.h>
 #include <ESP32Time.h>
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
@@ -32,24 +35,27 @@
 // Lokale konfigfiler og miljøvariabler
 #include "./config.h"
 
-// Henter og setter nødvendige parameter fra config.h
-const char *ssid = SSID;
-const char *password = PASSWORD;
-
 // Klokkkeinnstillinger
 long gmtOffset_sec = 3600; // Tidssone + 1 time
 int daylightOffset_sec = 3600; // Sommertid +1 time - Vintertid +0 timer
-const char *ntpServer = "no.pool.ntp.org"; // Klokkeserver
+// const char *ntpServer = "no.pool.ntp.org"; // Klokkeserver
+
+// NTP UDP - Må ryddes
+unsigned int localPort = 8888;       // local port to listen for UDP packets
+const char timeServer[] = "no.pool.ntp.org"; // time.nist.gov NTP server
+const int NTP_PACKET_SIZE = 48; // NTP time stamp is in the first 48 bytes of the message
+byte packetBuffer[NTP_PACKET_SIZE]; //buffer to hold incoming and outgoing packets
 
 // Parametre som brukes av SolarCalcultaor (Astrouret)
 double latitude = PLC_POS_LAT;
 double longitude = PLC_POS_LONG;
-int utc_offset = (gmtOffset_sec + daylightOffset_sec) / 3600;
+int utc_offset = (gmtOffset_sec + daylightOffset_sec);
+int utc_offset_timer = utc_offset / 3600;  // Endre navn på denne variabelen?
 int year, month, day;
 double transit, sunrise, sunset, c_dawn, c_dusk;
 
 //ESP32Time-objekt: rtc;
-ESP32Time rtc(0);
+ESP32Time rtc(utc_offset);
 
 // Globale "tilstander"
 bool isDark = false;
@@ -58,24 +64,29 @@ bool manuell_lux = false;
 bool manuell_toppsystem = false;
 bool door_open = false;
 
-// Your MQTT-innstillinger
+// MQTT-innstillinger
 const char *mqttBroker = MQTT_BROKER;
 const int mqttPort = MQTT_PORT;
 const char *mqttUser = MQTT_USER;
 const char *mqttPassword = MQTT_PASSWORD;
 
-// MQTT topics
+// MQTT topics og meldingsbuffer
 const char *publishTopic = MQTT_PUBLISH_TOPIC;
 const char *subscribeTopic = MQTT_SUBSCRIBE_TOPIC;
-
 unsigned long lastMsg = 0;
 #define MSG_BUFFER_SIZE (5)
 char msg[MSG_BUFFER_SIZE];
 
-WiFiClient wifiClient;
-PubSubClient client(wifiClient);
+// Ethernet og udp-klienter;
+EthernetClient ethClient;
+PubSubClient client(ethClient);
+// A UDP instance to let us send and receive packets over UDP
+EthernetUDP Udp;
 
-// Callbak som kjører kommandoer fra toppsystem
+// Update these with values suitable for your network.
+byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };  // Denne skjønner jeg ikke helt. ....ennå.
+
+// MQTT-Callbak som kjører kommandoer fra toppsystem
 void callback(char *topic, byte *payload, unsigned int length) {
   Serial.print("Message arrived [");
   Serial.print(topic);
@@ -89,6 +100,18 @@ void callback(char *topic, byte *payload, unsigned int length) {
   // Switch on the LED if 'ON' was received
   if (message == "Toggle_manuell") {
     manuell_styring = !manuell_styring;
+  }
+
+  // Restarter PLC
+  if (message == "RESTART_PLC") {
+    Serial.print("RESTARTER SYSTEMET!!!");
+    ESP.restart();
+  }
+
+    // Still klokka
+  if (message == "RESTART_PLC") {
+    Serial.print("Stiller klokka");
+    stillKlokka();
   }
 
   if (message == "Manuell_ON" && manuell_styring) {
@@ -125,9 +148,6 @@ void reconnect() {
     }
   }
 }
-
-// *********** Egne funksjoner som tidligere lå i funksjoner_loop1.h *****************
-// ************ Rydde i denne delen ***************
 
 // Dene funksjonen brukes kun til debugging - Kun for formattering av utskrift i Serial monitor
 char* hoursToString(double h, char* str) {
@@ -187,33 +207,86 @@ bool sjekkManuell_styring() {
     }
 }
 
+// send an NTP request to the time server at the given address
+void sendNTPpacket(const char * address) {
+  // set all bytes in the buffer to 0
+  memset(packetBuffer, 0, NTP_PACKET_SIZE);
+  // Initialize values needed to form NTP request
+  // (see URL above for details on the packets)
+  packetBuffer[0] = 0b11100011;   // LI, Version, Mode
+  packetBuffer[1] = 0;     // Stratum, or type of clock
+  packetBuffer[2] = 6;     // Polling Interval
+  packetBuffer[3] = 0xEC;  // Peer Clock Precision
+  // 8 bytes of zero for Root Delay & Root Dispersion
+  packetBuffer[12]  = 49;
+  packetBuffer[13]  = 0x4E;
+  packetBuffer[14]  = 49;
+  packetBuffer[15]  = 52;
+
+  // all NTP fields have been given values, now
+  // you can send a packet requesting a timestamp:
+  Udp.beginPacket(address, 123); // NTP requests are to port 123
+  Udp.write(packetBuffer, NTP_PACKET_SIZE);
+  Udp.endPacket();
+}
+
+void stillKlokka() {
+  // En funksjon som stiller klokka f.eks. ved strømutfall og/eller boot
+    // Henter epoch-tid fra NTP-server med UDP
+  Udp.begin(localPort);
+  delay(1000);
+  sendNTPpacket(timeServer); // Egen funksjon som sender en "custom"-pakke til NTP-server
+  // Venter på respons
+  delay(1000);
+  // Henter ut epoch-tid som ligger godt gjemt langt inne i responsen fra NTP-serveren
+  if (Udp.parsePacket()) {
+    Udp.read(packetBuffer, NTP_PACKET_SIZE);
+    unsigned long highWord = word(packetBuffer[40], packetBuffer[41]);
+    unsigned long lowWord = word(packetBuffer[42], packetBuffer[43]);
+    unsigned long secsSince1900 = highWord << 16 | lowWord;
+    const unsigned long seventyYears = 2208988800UL;
+    unsigned long myepoch = secsSince1900 - seventyYears;
+    rtc.setTime(myepoch); // Setter rtc til ntp-tid ved boot
+    Serial.println("Klokka er nå korrekt og viser: ");
+    Serial.println(myepoch);
+  }
+}
+
 // **************************************************************************
+// ************ Her kommer setup og loopene *********************************
 // **************************************************************************
 
 void setup() {
   Serial.begin(115200);
-  //connect to WiFi
-  Serial.printf("Connecting to %s ", ssid);
-  WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
+  // Starter Ethernet and UDP/NTP
+  if (Ethernet.begin(mac) == 0) {
+    Serial.println("Feilet i å konfigurere ethernet med DHCP");
+    if (Ethernet.hardwareStatus() == EthernetNoHardware) {
+      Serial.println("Finner ikke ethernet-shield.  Kan ikke fortsette uten hardware. :(");
+    } else if (Ethernet.linkStatus() == LinkOFF) {
+      Serial.println("Ethernetkabel er ikke tilkoblet");
+    }
+    while (true) {
+      delay(1);
+      Serial.println("Noe gikk veldig galt!!");
+    }
   }
-  Serial.println(" CONNECTED");
+  
+  stillKlokka();
 
-  // Stiller klokka ved reboot - Må kjøres på nytt når man skal endre sommer-/vintertid
-  configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+  delay(1000);
+  Ethernet.maintain();
 
   // Initiering av MQTT (PubSub-klienten)
   client.setServer(mqttBroker, mqttPort);
   client.setCallback(callback);
 
-  delay(10000); // Venter i 10 sekunder slik at klokka blir satt for å unngå av/på av utganger ved boot
+  delay(2000); // Venter i 2 sekunder slik at klokka blir satt for å unngå av/på av utganger ved boot
 }
 
 // Hovedløkke - kommunikasjon
 void loop() {
-
+  Serial.println(Ethernet.localIP()); // print M-Duino ip
   // Listen for mqtt message and reconnect if disconnected
   if (!client.connected()) {
     reconnect();
@@ -227,7 +300,7 @@ void loop() {
     lastMsg = now;
     // client.publish(publishTopic, "Nå er det 1 minutt siden jeg har publisert");
   }
-  delay(1000);
+  delay(5000);
 }
 
 // Hovedløkke - Automatikk
@@ -243,21 +316,12 @@ void loop1() {
   calcSunriseSunset(year, month, day, latitude, longitude, transit, sunrise, sunset);
 
   // Sjekker og setter tilstanden til lysstyringen.
-  isDark = sjekkIsDark(sunrise + utc_offset, sunset + utc_offset, rtc.getHour(true), rtc.getMinute());
+  isDark = sjekkIsDark(sunrise + utc_offset_timer, sunset + utc_offset_timer, rtc.getHour(true), rtc.getMinute());
   // manuell_styring = false; //sjekkManuell_lux(); // sjekkManuell_styring(); // Erstatt med true/false for å teste
   // manuell_lux = false;  // sjekkManuell_lux(); // Erstatt med true/false for å teste
   // manuell_toppsystem = false;
 
   delay(1000);  // Vent 1 sekund
-
-  // Logging til Serial for debugging - Fjernes i prod
-  char str[6];
-  Serial.print("\nTussmørke: ");
-  Serial.print(hoursToString(c_dusk + utc_offset, str));
-  Serial.print("\n");
-  Serial.print("Grålysning: ");
-  Serial.print(hoursToString(c_dawn + utc_offset, str));
-  Serial.print("\n");
 
   // Sjekker isD (isDark()) om det er natt eller dag og tenner/slukker utgang
   if (!manuell_styring && !manuell_toppsystem) {
@@ -299,5 +363,5 @@ void loop1() {
   Serial.println(meldingsobjekt);
 
   client.publish(publishTopic, meldingsobjekt);
-  delay(3000);  // Vent 3 sekunder før neste sjekk
+  delay(5000);  // Vent 3 sekunder før neste sjekk
 }
