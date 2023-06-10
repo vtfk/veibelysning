@@ -19,7 +19,7 @@ Dette repoet inneholder flere mapper. Hver mappe er et "trinn" mot det fullstend
 
 I testingen har det vist seg at siste versjon (2.1.x) av industrialshields-esp32 board-biblioteket har gitt en del kompileringsfeil. Bruk derfor v.2.0.7 av industrialshields-esp32.
 
-I mappene med nummerering 0x-... ligger kode som kommuniserer mot Azure IoT-central. I mappene med nummerering 1x-... ligger kode som kommuniserer med en MQTT-broker.
+For at koden skal fungere må du ha filen '''config.h''' som inneholder miljøvariabler. Se filen '''eksempel-config.h''' for tips.
 
-Det er ikke alle USB-kabler som fungerer. Sørg for at du bruker en som er beregnet for dataoverføring.
+Det er ikke alle USB-kabler som fungerer. Sørg for at du bruker en som er beregnet for dataoverføring når du skal laste opp kode til PLC-en
 
