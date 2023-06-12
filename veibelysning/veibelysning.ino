@@ -74,6 +74,8 @@ const char *mqttPassword = MQTT_PASSWORD;
 const char *publishTopic = MQTT_PUBLISH_TOPIC;
 const char *subscribeTopic = MQTT_SUBSCRIBE_TOPIC;
 unsigned long lastMsg = 0;
+unsigned long lastState = 0;
+
 #define MSG_BUFFER_SIZE (5)
 char msg[MSG_BUFFER_SIZE];
 
@@ -97,9 +99,9 @@ void callback(char *topic, byte *payload, unsigned int length) {
   }
   Serial.print(message);
 
-  // Switch on the LED if 'ON' was received
   if (message == "Toggle_manuell") {
     manuell_styring = !manuell_styring;
+    publiserTilstand();
   }
 
   // Restarter PLC
@@ -109,7 +111,7 @@ void callback(char *topic, byte *payload, unsigned int length) {
   }
 
     // Still klokka
-  if (message == "RESTART_PLC") {
+  if (message == "STILL_KLOKKA") {
     Serial.print("Stiller klokka");
     stillKlokka();
   }
@@ -168,6 +170,7 @@ char* hoursToString(double h, char* str) {
 // opp = tidspunkt for soloppgang, ned = tidspunkt for solnedgang, timer = time, minutter = minutter i hele timer
 bool sjekkIsDark(double opp, double ned, int timer, int minutter) {
   // Logger til Serial monitor for å sjekke at det fungerer
+  
   Serial.print("\nSola opp: ");
   char str[6];
   Serial.print(hoursToString(opp, str));
@@ -252,6 +255,27 @@ void stillKlokka() {
   }
 }
 
+void jegLever() {
+  client.publish(publishTopic, "RX303-PLC1 lever");
+}
+
+void publiserTilstand() {
+   // Lager JSON-objekt som skal sendes til MQTT
+      StaticJsonDocument<200> veilysData;
+      veilysData["epoch"] = rtc.getEpoch();
+      veilysData["skapID"] = PLC_ID;
+      veilysData["lux"] = manuell_lux;
+      veilysData["status_lys"] = isDark;
+      veilysData["manuell_styring"] = manuell_styring;
+      veilysData["dor_lukket"] = door_open;
+      char meldingsobjekt[200];
+      serializeJson(veilysData, meldingsobjekt);
+
+      Serial.println(meldingsobjekt);
+
+      client.publish(publishTopic, meldingsobjekt);
+}
+
 // **************************************************************************
 // ************ Her kommer setup og loopene *********************************
 // **************************************************************************
@@ -265,10 +289,10 @@ void setup() {
       Serial.println("Finner ikke ethernet-shield.  Kan ikke fortsette uten hardware. :(");
     } else if (Ethernet.linkStatus() == LinkOFF) {
       Serial.println("Ethernetkabel er ikke tilkoblet");
-    }
-    while (true) {
-      delay(1);
-      Serial.println("Noe gikk veldig galt!!");
+    } else {
+      Serial.println("Noe gikk veldig galt!! Kjører reset om 10 sekunder");
+      delay(10000);
+      ESP.restart();
     }
   }
   
@@ -286,7 +310,6 @@ void setup() {
 
 // Hovedløkke - kommunikasjon
 void loop() {
-  Serial.println(Ethernet.localIP()); // print M-Duino ip
   // Listen for mqtt message and reconnect if disconnected
   if (!client.connected()) {
     reconnect();
@@ -294,13 +317,13 @@ void loop() {
   // Kall til PubSubClient som prosesserer innkomne og utgående meldinger
   client.loop();
 
-  // Hvis ønskelig kan det publiseres meldinger til faste intervall
+  // Publiserer "Jeg lever melding" en gang i timen
   unsigned long now = millis();
   if (now - lastMsg > 60000) {
     lastMsg = now;
-    // client.publish(publishTopic, "Nå er det 1 minutt siden jeg har publisert");
+    jegLever();
   }
-  delay(5000);
+  delay(1000);
 }
 
 // Hovedløkke - Automatikk
@@ -311,7 +334,7 @@ void loop1() {
   year = rtc.getYear();
   month = rtc.getMonth() + 1;  // +1 siden månedene telles fra 0-11 (!)
   day = rtc.getDay();
-  
+
   // Kalkulerer soloppgang og solnedgang for gitt dato
   calcSunriseSunset(year, month, day, latitude, longitude, transit, sunrise, sunset);
 
@@ -321,11 +344,15 @@ void loop1() {
   // manuell_lux = false;  // sjekkManuell_lux(); // Erstatt med true/false for å teste
   // manuell_toppsystem = false;
 
-  delay(1000);  // Vent 1 sekund
+  // Her kan man lese inn sensorverdier og andre inputs
+  int verdi = analogRead(I0_5); // Simulerer lux-verdi
+  int status_lys = analogRead(I0_3); // Leser av status på utgang for lysstyring
+
+  delay(1000);  // Vent 1 sekund for å sikre at isDark returnerer verdi
 
   // Sjekker isD (isDark()) om det er natt eller dag og tenner/slukker utgang
   if (!manuell_styring && !manuell_toppsystem) {
-    if (isDark) {  // isDark er erstattet med true for å teste
+    if (isDark) {
       Serial.print("Automatisk styring aktiv - Lampestatus: PÅ!\n");
       digitalWrite(Q0_0, HIGH);
       digitalWrite(R0_8, HIGH);
@@ -345,23 +372,12 @@ void loop1() {
     Serial.print("Toppsystem styring aktivt!\n");
   }
 
-  // Her kan man lese inn sensorverdier og andre inputs
-  int verdi = analogRead(I0_5); // Simulerer lux-verdi
-  int status_lys = analogRead(I0_3); // Leser av status på utgang for lysstyring
+  // Publiserer info om state en gang i minuttet
+  unsigned long now = millis();
+  if (now - lastState > 60000) {
+    lastState = now;
+    publiserTilstand();
+  }
 
-  // Lager JSON-objekt som skal sendes til MQTT
-  StaticJsonDocument<200> veilysData;
-  veilysData["epoch"] = rtc.getEpoch();
-  veilysData["skapID"] = PLC_ID;
-  veilysData["lux"] = verdi;
-  veilysData["status_lys"] = status_lys;
-  veilysData["manuell_styring"] = manuell_styring;
-  veilysData["dor_lukket"] = true;
-  char meldingsobjekt[200];
-  serializeJson(veilysData, meldingsobjekt);
-
-  Serial.println(meldingsobjekt);
-
-  client.publish(publishTopic, meldingsobjekt);
-  delay(5000);  // Vent 3 sekunder før neste sjekk
+  delay(5000);  // Vent 5 sekunder før neste sjekk
 }
