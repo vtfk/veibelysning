@@ -10,8 +10,10 @@ Ta gjerne kontakt om du har spørsmål eller lurer på noe!
 Happy hacking!
 
 ## ⚙️ Teknisk utstyr
-
 Prosjektet baserer seg på utsyr fra [Industrial Shields](http://industrialshields.com) som produserer blant annet [ESP32 PLC 19R](https://www.industrialshields.com/shop/product/034001000100-esp32-plc-19r-2905#attr=387,1558,2240,2316,3727,2317,3804) som er den viktigste komponenten i veilysstyringen. I tillegg brukes det en [strømforsyning](https://www.industrialshields.com/shop/product/is-ac24vdc7-5adin-din-rail-power-supply-ac-dc-180w-1-output-7-5a-at-24vdc-690?search=power+supply#attr=3651) fra samme produsent.
+
+## 📡 Kommunikasjon
+Systemet snakker sammen ved hjelp av MQTT og NodeRed.
 
 ## 🛠️ Slik kommer du i gang 
 
