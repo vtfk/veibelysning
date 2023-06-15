@@ -36,8 +36,8 @@
 #include "./config.h"
 
 // Klokkkeinnstillinger
-long gmtOffset_sec = 3600; // Tidssone + 1 time
-int daylightOffset_sec = 3600; // Sommertid +1 time - Vintertid +0 timer
+long gmtOffset_sec = 3600; // Tidssone i Norge + 1 time
+int daylightOffset_sec = 3600; // Sommertid + 1 time - Vintertid + 0 timer
 // const char *ntpServer = "no.pool.ntp.org"; // Klokkeserver
 
 // NTP UDP - Må ryddes
@@ -50,7 +50,7 @@ byte packetBuffer[NTP_PACKET_SIZE]; //buffer to hold incoming and outgoing packe
 double latitude = PLC_POS_LAT;
 double longitude = PLC_POS_LONG;
 int utc_offset = (gmtOffset_sec + daylightOffset_sec);
-int utc_offset_timer = utc_offset / 3600;  // Endre navn på denne variabelen?
+int utc_offset_hour = utc_offset / 3600;  // Endre navn på denne variabelen?
 int year, month, day;
 double transit, sunrise, sunset, c_dawn, c_dusk;
 
@@ -63,6 +63,7 @@ bool manuell_styring = false;
 bool manuell_lux = false;
 bool manuell_toppsystem = false;
 bool door_open = false;
+bool status_lys = false;
 
 // MQTT-innstillinger
 const char *mqttBroker = MQTT_BROKER;
@@ -86,7 +87,7 @@ PubSubClient client(ethClient);
 EthernetUDP Udp;
 
 // Update these with values suitable for your network.
-byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };  // Denne skjønner jeg ikke helt. ....ennå.
+byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };  // Denne skjønner jeg ikke helt. ....ennå. Men det virker. :-)
 
 // MQTT-Callbak som kjører kommandoer fra toppsystem
 void callback(char *topic, byte *payload, unsigned int length) {
@@ -120,10 +121,12 @@ void callback(char *topic, byte *payload, unsigned int length) {
     Serial.println("Manuell - PÅ \n");
     digitalWrite(Q0_0, HIGH);
     digitalWrite(R0_8, HIGH);
+    publiserTilstand();
   } else if (message == "Manuell_OFF" && manuell_styring) {
     Serial.println("Manuell - AV \n");
     digitalWrite(Q0_0, LOW);
     digitalWrite(R0_8, LOW);
+    publiserTilstand();
   }
 }
 
@@ -256,7 +259,15 @@ void stillKlokka() {
 }
 
 void jegLever() {
-  client.publish(publishTopic, "RX303-PLC1 lever");
+  publiserTilstand();
+}
+
+bool sjekkTilstandLys() {
+  if ( analogRead(I0_3) > 300 ) {
+    return true;
+  } else {
+    return false;
+  }
 }
 
 void publiserTilstand() {
@@ -265,7 +276,7 @@ void publiserTilstand() {
       veilysData["epoch"] = rtc.getEpoch();
       veilysData["skapID"] = PLC_ID;
       veilysData["lux"] = manuell_lux;
-      veilysData["status_lys"] = isDark;
+      veilysData["status_lys"] = sjekkTilstandLys();
       veilysData["manuell_styring"] = manuell_styring;
       veilysData["dor_lukket"] = door_open;
       char meldingsobjekt[200];
@@ -296,8 +307,8 @@ void setup() {
     }
   }
   
+  delay(3000);
   stillKlokka();
-
   delay(1000);
   Ethernet.maintain();
 
@@ -305,7 +316,7 @@ void setup() {
   client.setServer(mqttBroker, mqttPort);
   client.setCallback(callback);
 
-  delay(2000); // Venter i 2 sekunder slik at klokka blir satt for å unngå av/på av utganger ved boot
+  delay(2000); // Venter i 2 sekunder slik at klokka rekker å bli satt for å unngå av/på av utganger ved boot
 }
 
 // Hovedløkke - kommunikasjon
@@ -317,11 +328,11 @@ void loop() {
   // Kall til PubSubClient som prosesserer innkomne og utgående meldinger
   client.loop();
 
-  // Publiserer "Jeg lever melding" en gang i timen
+  // Publiserer "Jeg lever melding" en gang i minuttet
   unsigned long now = millis();
   if (now - lastMsg > 60000) {
     lastMsg = now;
-    jegLever();
+    publiserTilstand();
   }
   delay(1000);
 }
@@ -339,14 +350,11 @@ void loop1() {
   calcSunriseSunset(year, month, day, latitude, longitude, transit, sunrise, sunset);
 
   // Sjekker og setter tilstanden til lysstyringen.
-  isDark = sjekkIsDark(sunrise + utc_offset_timer, sunset + utc_offset_timer, rtc.getHour(true), rtc.getMinute());
-  // manuell_styring = false; //sjekkManuell_lux(); // sjekkManuell_styring(); // Erstatt med true/false for å teste
-  // manuell_lux = false;  // sjekkManuell_lux(); // Erstatt med true/false for å teste
-  // manuell_toppsystem = false;
+  isDark = sjekkIsDark(sunrise + utc_offset_hour, sunset + utc_offset_hour, rtc.getHour(true), rtc.getMinute());
 
   // Her kan man lese inn sensorverdier og andre inputs
   int verdi = analogRead(I0_5); // Simulerer lux-verdi
-  int status_lys = analogRead(I0_3); // Leser av status på utgang for lysstyring
+  // int status_lys = analogRead(I0_3); // Leser av status på utgang for lysstyring
 
   delay(1000);  // Vent 1 sekund for å sikre at isDark returnerer verdi
 
@@ -370,13 +378,6 @@ void loop1() {
 
   if (manuell_toppsystem) {
     Serial.print("Toppsystem styring aktivt!\n");
-  }
-
-  // Publiserer info om state en gang i minuttet
-  unsigned long now = millis();
-  if (now - lastState > 60000) {
-    lastState = now;
-    publiserTilstand();
   }
 
   delay(5000);  // Vent 5 sekunder før neste sjekk
