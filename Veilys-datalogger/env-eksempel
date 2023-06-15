@@ -1,0 +1,6 @@
+
+
+HOST=<url-til-databasen>
+USER=<brukernavn>
+PASSWORD=<passord>
+DATABASE=<navn-på-databasen>
