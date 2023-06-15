@@ -1,3 +1,7 @@
+
+# Python script som plotter veilysdata fra databasen
+# Lisens: CC BY-SA 4.0 - VTFK - 2023
+
 import mysql.connector
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
