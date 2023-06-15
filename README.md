@@ -3,6 +3,8 @@
 ## ℹ️ Om veilys
 I dette repoet finner du veiledninger og prototyping av utstyr og kode med mål om å lage et komplett styringssystem for veibelysning i Vestfold og Telemark. Prosjektet er et samarbeid mellom seksjon for samferdsel, miljø og mobilitet (SMM) og utviklingsavdelingen (BDK/TEK) i Vestfold og Telemark fylkeskommune.
 
+I mappen Veilys-datalogger finnes det et Python-program for å enkelt henteut data fra en databse og visualisere det.
+
 All kode og informasjon om prosjektet samt de tekniske løsningene åpne og fritt tilgjengelige. De er lisensiert med Creative Commons 4.0 BY - SA som betyr at du kan gjenbruke og modifisere koden slik du selv ønsker forutsatt at du deler den videre med samme lisens og krediterer VTFK som opphav.
 
 Ta gjerne kontakt om du har spørsmål eller lurer på noe!
