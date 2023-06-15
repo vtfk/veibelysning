@@ -32,9 +32,9 @@ for x in myresult:
   manuell.append(x[4])
   dt.append(datetime.datetime.fromtimestamp(x[1] - 3600*2))
 
-plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%d.%m.%Y'))
-plt.gca().xaxis.set_major_locator(mdates.DayLocator())
+plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%H:%M -  %d.%m.%Y'))
+plt.gca().xaxis.set_major_locator(mdates.HourLocator(interval=2))
 plt.plot(dt, lys)
-plt.plot(dt, manuell)
+# plt.plot(dt, manuell)
 plt.gcf().autofmt_xdate()
 plt.show()
