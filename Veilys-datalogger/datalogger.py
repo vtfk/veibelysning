@@ -40,12 +40,15 @@ for x in myresult:
 
 # Plotter veilysdata fra databasen
 plt.title('Veilys')
-plt.xlabel("Tidspunkt")
+plt.xlabel("Dato")
 plt.ylabel("Status lys")
 plt.yticks([])
-plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%H:%M -  %d.%m.%Y'))
-plt.gca().xaxis.set_major_locator(mdates.HourLocator(interval=2))
+plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%d.%m.%Y'))
+plt.gca().xaxis.set_major_locator(mdates.DayLocator(interval=1))
+plt.gca().xaxis.set_minor_locator(mdates.HourLocator(interval=6))
 plt.plot(dt, lys)
 # plt.plot(dt, manuell)
 plt.gcf().autofmt_xdate()
+plt.grid(axis="x")
 plt.show()
+
