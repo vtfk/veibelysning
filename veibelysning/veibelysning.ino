@@ -36,15 +36,15 @@
 #include "./config.h"
 
 // Klokkkeinnstillinger
-long gmtOffset_sec = 3600; // Tidssone i Norge + 1 time
-int daylightOffset_sec = 3600; // Sommertid + 1 time - Vintertid + 0 timer
+long gmtOffset_sec = 3600;      // Tidssone i Norge + 1 time
+int daylightOffset_sec = 3600;  // Sommertid + 1 time - Vintertid + 0 timer
 // const char *ntpServer = "no.pool.ntp.org"; // Klokkeserver
 
 // NTP UDP - Må ryddes
-unsigned int localPort = 8888;       // local port to listen for UDP packets
-const char timeServer[] = "no.pool.ntp.org"; // time.nist.gov NTP server
-const int NTP_PACKET_SIZE = 48; // NTP time stamp is in the first 48 bytes of the message
-byte packetBuffer[NTP_PACKET_SIZE]; //buffer to hold incoming and outgoing packets
+unsigned int localPort = 8888;                // local port to listen for UDP packets
+const char timeServer[] = "no.pool.ntp.org";  // time.nist.gov NTP server
+const int NTP_PACKET_SIZE = 48;               // NTP time stamp is in the first 48 bytes of the message
+byte packetBuffer[NTP_PACKET_SIZE];           //buffer to hold incoming and outgoing packets
 
 // Parametre som brukes av SolarCalcultaor (Astrouret)
 double latitude = PLC_POS_LAT;
@@ -61,6 +61,7 @@ ESP32Time rtc(utc_offset);
 bool isDark = false;
 bool manuell_styring = false;
 bool manuell_lux = false;
+int sensor_lux = 0;
 bool manuell_toppsystem = false;
 bool door_open = false;
 bool status_lys = false;
@@ -111,7 +112,7 @@ void callback(char *topic, byte *payload, unsigned int length) {
     ESP.restart();
   }
 
-    // Still klokka
+  // Still klokka
   if (message == "STILL_KLOKKA") {
     Serial.print("Stiller klokka");
     stillKlokka();
@@ -140,7 +141,7 @@ void reconnect() {
     clientId += String(random(0xffff), HEX);
 
     // Attempt to connect
-    if (client.connect(clientId.c_str())) {
+    if (client.connect(clientId.c_str(), mqttUser, mqttPassword)) {
       Serial.println("connected");
       // Subscribe to topic
       client.subscribe(subscribeTopic);
@@ -155,7 +156,7 @@ void reconnect() {
 }
 
 // Dene funksjonen brukes kun til debugging - Kun for formattering av utskrift i Serial monitor
-char* hoursToString(double h, char* str) {
+char *hoursToString(double h, char *str) {
   int m = int(round(h * 60));
   int hr = (m / 60) % 24;
   int mn = m % 60;
@@ -173,7 +174,7 @@ char* hoursToString(double h, char* str) {
 // opp = tidspunkt for soloppgang, ned = tidspunkt for solnedgang, timer = time, minutter = minutter i hele timer
 bool sjekkIsDark(double opp, double ned, int timer, int minutter) {
   // Logger til Serial monitor for å sjekke at det fungerer
-  
+
   Serial.print("\nSola opp: ");
   char str[6];
   Serial.print(hoursToString(opp, str));
@@ -195,53 +196,51 @@ bool sjekkIsDark(double opp, double ned, int timer, int minutter) {
 
 // Må kobles til bryter for å fungere skikelig
 bool sjekkManuell_lux() {
-  if (analogRead(I0_5) > 300)
-    {
-      return true;
-    } else {
-      return false;
-    }
+  if (analogRead(I0_5) > 300) {
+    return true;
+  } else {
+    return false;
+  }
 }
 
 // Må kobles til bryter for å fungere skikelig
 bool sjekkManuell_styring() {
-  if (analogRead(I0_2) > 500)
-    {
-      return true;
-    } else {
-      return false;
-    }
+  if (analogRead(I0_2) > 500) {
+    return true;
+  } else {
+    return false;
+  }
 }
 
 // send an NTP request to the time server at the given address
-void sendNTPpacket(const char * address) {
+void sendNTPpacket(const char *address) {
   // set all bytes in the buffer to 0
   memset(packetBuffer, 0, NTP_PACKET_SIZE);
   // Initialize values needed to form NTP request
   // (see URL above for details on the packets)
-  packetBuffer[0] = 0b11100011;   // LI, Version, Mode
-  packetBuffer[1] = 0;     // Stratum, or type of clock
-  packetBuffer[2] = 6;     // Polling Interval
-  packetBuffer[3] = 0xEC;  // Peer Clock Precision
+  packetBuffer[0] = 0b11100011;  // LI, Version, Mode
+  packetBuffer[1] = 0;           // Stratum, or type of clock
+  packetBuffer[2] = 6;           // Polling Interval
+  packetBuffer[3] = 0xEC;        // Peer Clock Precision
   // 8 bytes of zero for Root Delay & Root Dispersion
-  packetBuffer[12]  = 49;
-  packetBuffer[13]  = 0x4E;
-  packetBuffer[14]  = 49;
-  packetBuffer[15]  = 52;
+  packetBuffer[12] = 49;
+  packetBuffer[13] = 0x4E;
+  packetBuffer[14] = 49;
+  packetBuffer[15] = 52;
 
   // all NTP fields have been given values, now
   // you can send a packet requesting a timestamp:
-  Udp.beginPacket(address, 123); // NTP requests are to port 123
+  Udp.beginPacket(address, 123);  // NTP requests are to port 123
   Udp.write(packetBuffer, NTP_PACKET_SIZE);
   Udp.endPacket();
 }
 
 void stillKlokka() {
   // En funksjon som stiller klokka f.eks. ved strømutfall og/eller boot
-    // Henter epoch-tid fra NTP-server med UDP
+  // Henter epoch-tid fra NTP-server med UDP
   Udp.begin(localPort);
   delay(1000);
-  sendNTPpacket(timeServer); // Egen funksjon som sender en "custom"-pakke til NTP-server
+  sendNTPpacket(timeServer);  // Egen funksjon som sender en "custom"-pakke til NTP-server
   // Venter på respons
   delay(1000);
   // Henter ut epoch-tid som ligger godt gjemt langt inne i responsen fra NTP-serveren
@@ -252,7 +251,7 @@ void stillKlokka() {
     unsigned long secsSince1900 = highWord << 16 | lowWord;
     const unsigned long seventyYears = 2208988800UL;
     unsigned long myepoch = secsSince1900 - seventyYears;
-    rtc.setTime(myepoch); // Setter rtc til ntp-tid ved boot
+    rtc.setTime(myepoch);  // Setter rtc til ntp-tid ved boot
     Serial.println("Klokka er nå korrekt og viser: ");
     Serial.println(myepoch);
   }
@@ -263,7 +262,7 @@ void jegLever() {
 }
 
 bool sjekkTilstandLys() {
-  if ( analogRead(I0_3) > 300 ) {
+  if (analogRead(I0_3) > 300) {
     return true;
   } else {
     return false;
@@ -271,20 +270,20 @@ bool sjekkTilstandLys() {
 }
 
 void publiserTilstand() {
-   // Lager JSON-objekt som skal sendes til MQTT
-      StaticJsonDocument<200> veilysData;
-      veilysData["epoch"] = rtc.getEpoch();
-      veilysData["skapID"] = PLC_ID;
-      veilysData["lux"] = manuell_lux;
-      veilysData["status_lys"] = sjekkTilstandLys();
-      veilysData["manuell_styring"] = manuell_styring;
-      veilysData["dor_lukket"] = door_open;
-      char meldingsobjekt[200];
-      serializeJson(veilysData, meldingsobjekt);
+  // Lager JSON-objekt som skal sendes til MQTT
+  StaticJsonDocument<200> veilysData;
+  veilysData["epoch"] = rtc.getEpoch();
+  veilysData["skapID"] = PLC_ID;
+  veilysData["lux"] = sensor_lux;
+  veilysData["status_lys"] = sjekkTilstandLys();
+  veilysData["manuell_styring"] = manuell_styring;
+  veilysData["dor_lukket"] = door_open;
+  char meldingsobjekt[200];
+  serializeJson(veilysData, meldingsobjekt);
 
-      Serial.println(meldingsobjekt);
+  Serial.println(meldingsobjekt);
 
-      client.publish(publishTopic, meldingsobjekt);
+  client.publish(publishTopic, meldingsobjekt);
 }
 
 // **************************************************************************
@@ -306,7 +305,7 @@ void setup() {
       ESP.restart();
     }
   }
-  
+
   delay(3000);
   stillKlokka();
   delay(1000);
@@ -316,7 +315,13 @@ void setup() {
   client.setServer(mqttBroker, mqttPort);
   client.setCallback(callback);
 
-  delay(2000); // Venter i 2 sekunder slik at klokka rekker å bli satt for å unngå av/på av utganger ved boot
+  delay(2000);  // Venter i 2 sekunder slik at klokka rekker å bli satt for å unngå av/på av utganger ved boot
+
+  if (rtc.getYear() < 2023) {
+    Serial.print("Venter 1 minutt på å stille klokka");
+    delay(60000);
+    stillKlokka();
+  }
 }
 
 // Hovedløkke - kommunikasjon
@@ -330,7 +335,7 @@ void loop() {
 
   // Publiserer "Jeg lever melding" en gang i minuttet
   unsigned long now = millis();
-  if (now - lastMsg > 60000) {
+  if (now - lastMsg > 6000) {
     lastMsg = now;
     publiserTilstand();
   }
@@ -351,14 +356,15 @@ void loop1() {
 
   // Sjekker og setter tilstanden til lysstyringen.
   isDark = sjekkIsDark(sunrise + utc_offset_hour, sunset + utc_offset_hour, rtc.getHour(true), rtc.getMinute());
-
+  
   // Her kan man lese inn sensorverdier og andre inputs
-  int verdi = analogRead(I0_5); // Simulerer lux-verdi
+  sensor_lux = analogRead(I0_2);
+
   // int status_lys = analogRead(I0_3); // Leser av status på utgang for lysstyring
 
   delay(1000);  // Vent 1 sekund for å sikre at isDark returnerer verdi
 
-  // Sjekker isD (isDark()) om det er natt eller dag og tenner/slukker utgang
+  // Sjekker _isDark_ om det er natt eller dag og tenner/slukker utgang
   if (!manuell_styring && !manuell_toppsystem) {
     if (isDark) {
       Serial.print("Automatisk styring aktiv - Lampestatus: PÅ!\n");

@@ -39,16 +39,16 @@ for x in myresult:
   dt.append(datetime.datetime.fromtimestamp(x[1] - 3600*2))
 
 # Plotter veilysdata fra databasen
-plt.title('Veilys')
+plt.title('Veilys RV303-PLC01')
 plt.xlabel("Dato")
 plt.ylabel("Status lys")
 plt.yticks([])
 plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%d.%m.%Y'))
 plt.gca().xaxis.set_major_locator(mdates.DayLocator(interval=1))
 plt.gca().xaxis.set_minor_locator(mdates.HourLocator(interval=6))
-plt.plot(dt, lys)
-# plt.plot(dt, manuell)
 plt.gcf().autofmt_xdate()
 plt.grid(axis="x")
+
+plt.scatter(dt, lys)
 plt.show()
 
