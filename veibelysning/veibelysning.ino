@@ -122,11 +122,13 @@ void callback(char *topic, byte *payload, unsigned int length) {
     Serial.println("Manuell - PÅ \n");
     digitalWrite(Q0_0, HIGH);
     digitalWrite(R0_8, HIGH);
+    status_lys = true;
     publiserTilstand();
   } else if (message == "Manuell_OFF" && manuell_styring) {
     Serial.println("Manuell - AV \n");
     digitalWrite(Q0_0, LOW);
     digitalWrite(R0_8, LOW);
+    status_lys = false;
     publiserTilstand();
   }
 }
@@ -275,7 +277,7 @@ void publiserTilstand() {
   veilysData["epoch"] = rtc.getEpoch();
   veilysData["skapID"] = PLC_ID;
   veilysData["lux"] = sensor_lux;
-  veilysData["status_lys"] = sjekkTilstandLys();
+  veilysData["status_lys"] = status_lys;
   veilysData["manuell_styring"] = manuell_styring;
   veilysData["dor_lukket"] = door_open;
   char meldingsobjekt[200];
@@ -370,10 +372,12 @@ void loop1() {
       Serial.print("Automatisk styring aktiv - Lampestatus: PÅ!\n");
       digitalWrite(Q0_0, HIGH);
       digitalWrite(R0_8, HIGH);
+      status_lys = true;
     } else {
       Serial.print("Automatisk styring aktiv - Lampestatus AV!\n");
       digitalWrite(Q0_0, LOW);
       digitalWrite(R0_8, LOW);
+      status_lys = false;
     }
   }
 
