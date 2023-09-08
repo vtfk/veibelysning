@@ -38,6 +38,7 @@
 // Klokkkeinnstillinger
 long gmtOffset_sec = 3600;      // Tidssone i Norge + 1 time
 int daylightOffset_sec = 3600;  // Sommertid + 1 time - Vintertid + 0 timer
+
 // const char *ntpServer = "no.pool.ntp.org"; // Klokkeserver
 
 // NTP UDP - Må ryddes
@@ -186,6 +187,8 @@ bool sjekkIsDark(double opp, double ned, int timer, int minutter) {
   Serial.print(String(timer) + ":" + String(minutter));
   Serial.print("\n");
 
+  Serial.print("\nDST: " + String(sjekkDST()) + "\n");
+
   // Skjøter sammen timer og minutter til en float
   float hm = timer + float(minutter) / 60;
 
@@ -194,6 +197,20 @@ bool sjekkIsDark(double opp, double ned, int timer, int minutter) {
   } else {
     return false;
   }
+}
+
+int sjekkDST() {
+    int dow = rtc.getDayofWeek();
+    int d = rtc.getDay();
+    int h = rtc.getHour(true);
+    int mon = rtc.getMonth();
+
+    if (dow == 0 && mon == 2 && d >= 25 && h == 1 && daylightOffset_sec == 0) { 
+      daylightOffset_sec = 3600;
+    } else if (dow == 0 && mon == 9 && d >= 25 && h == 2 && daylightOffset_sec == 3600) {
+      daylightOffset_sec == 0;
+    }
+    return daylightOffset_sec;
 }
 
 // Må kobles til bryter for å fungere skikelig
@@ -347,11 +364,12 @@ void loop() {
 // Hovedløkke - Automatikk
 void loop1() {
   Serial.println(rtc.getTime("RTC-tid er: %A, %B %d %Y %H:%M:%S\n"));
-
+  
   // Setter parametre slik at astrouret kan beregne soloppgang og solnedgang
   year = rtc.getYear();
   month = rtc.getMonth() + 1;  // +1 siden månedene telles fra 0-11 (!)
   day = rtc.getDay();
+  sjekkDST(); // Sjekker og setter riktig sommer-/vintertid
 
   // Kalkulerer soloppgang og solnedgang for gitt dato
   calcSunriseSunset(year, month, day, latitude, longitude, transit, sunrise, sunset);

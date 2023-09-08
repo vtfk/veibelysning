@@ -22,7 +22,9 @@ mydb = mysql.connector.connect(
 
 # Henter ut data fra databasen
 mycursor = mydb.cursor()
-mycursor.execute("SELECT * FROM veilys")
+# mycursor.execute("SELECT * FROM veilyslogg")
+mycursor.execute("SHOW TABLES")
+
 myresult = mycursor.fetchall()
 
 # Lager lister for å lagre data fra databasen
