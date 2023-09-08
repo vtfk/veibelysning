@@ -187,7 +187,7 @@ bool sjekkIsDark(double opp, double ned, int timer, int minutter) {
   Serial.print(String(timer) + ":" + String(minutter));
   Serial.print("\n");
 
-  Serial.print("\nDST: " + String(sjekkDST()) + "\n");
+  Serial.print("\nDST: " + String(daylightOffset_sec) + "\n");
 
   // Skjøter sammen timer og minutter til en float
   float hm = timer + float(minutter) / 60;
@@ -208,7 +208,7 @@ int sjekkDST() {
     if (dow == 0 && mon == 2 && d >= 25 && h == 1 && daylightOffset_sec == 0) { 
       daylightOffset_sec = 3600;
     } else if (dow == 0 && mon == 9 && d >= 25 && h == 2 && daylightOffset_sec == 3600) {
-      daylightOffset_sec == 0;
+      daylightOffset_sec = 0;
     }
     return daylightOffset_sec;
 }
