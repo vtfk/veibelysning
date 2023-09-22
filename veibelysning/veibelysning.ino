@@ -24,7 +24,6 @@
 */
 
 // Importerer nødvendige biblioteker
-// #include <SPI.h>
 #include <Ethernet.h>
 #include <EthernetUdp.h>
 #include <ESP32Time.h>
@@ -37,11 +36,9 @@
 
 // Klokkkeinnstillinger
 long gmtOffset_sec = 3600;      // Tidssone i Norge + 1 time
-int daylightOffset_sec = 3600;  // Sommertid + 1 time - Vintertid + 0 timer
+int daylightOffset_sec = 3600;  // Sommertid + 3600 sekunder - Vintertid + 0 sekunder
 
-// const char *ntpServer = "no.pool.ntp.org"; // Klokkeserver
-
-// NTP UDP - Må ryddes
+// NTP UDP - Må ryddes?
 unsigned int localPort = 8888;                // local port to listen for UDP packets
 const char timeServer[] = "no.pool.ntp.org";  // time.nist.gov NTP server
 const int NTP_PACKET_SIZE = 48;               // NTP time stamp is in the first 48 bytes of the message
@@ -85,6 +82,7 @@ char msg[MSG_BUFFER_SIZE];
 // Ethernet og udp-klienter;
 EthernetClient ethClient;
 PubSubClient client(ethClient);
+
 // A UDP instance to let us send and receive packets over UDP
 EthernetUDP Udp;
 
@@ -336,6 +334,7 @@ void setup() {
 
   delay(2000);  // Venter i 2 sekunder slik at klokka rekker å bli satt for å unngå av/på av utganger ved boot
 
+  // Sjekker om klokka er stilt riktig. Hvis ikke venter den 1 minutt og prøver på nytt
   if (rtc.getYear() < 2023) {
     Serial.print("Venter 1 minutt på å stille klokka");
     delay(60000);
@@ -354,7 +353,7 @@ void loop() {
 
   // Publiserer "Jeg lever melding" en gang i minuttet
   unsigned long now = millis();
-  if (now - lastMsg > 6000) {
+  if (now - lastMsg > 900000) {
     lastMsg = now;
     publiserTilstand();
   }
@@ -376,13 +375,12 @@ void loop1() {
 
   // Sjekker og setter tilstanden til lysstyringen.
   isDark = sjekkIsDark(sunrise + utc_offset_hour, sunset + utc_offset_hour, rtc.getHour(true), rtc.getMinute());
-  
+  delay(1000);  // Vent 1 sekund for å sikre at isDark returnerer verdi
+
+
   // Her kan man lese inn sensorverdier og andre inputs
   sensor_lux = analogRead(I0_2);
-
   // int status_lys = analogRead(I0_3); // Leser av status på utgang for lysstyring
-
-  delay(1000);  // Vent 1 sekund for å sikre at isDark returnerer verdi
 
   // Sjekker _isDark_ om det er natt eller dag og tenner/slukker utgang
   if (!manuell_styring && !manuell_toppsystem) {
@@ -407,6 +405,5 @@ void loop1() {
   if (manuell_toppsystem) {
     Serial.print("Toppsystem styring aktivt!\n");
   }
-
   delay(5000);  // Vent 5 sekunder før neste sjekk
 }
