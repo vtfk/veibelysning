@@ -299,7 +299,6 @@ void publiserTilstand() {
   serializeJson(veilysData, meldingsobjekt);
 
   Serial.println(meldingsobjekt);
-
   client.publish(publishTopic, meldingsobjekt);
 }
 
@@ -384,6 +383,10 @@ void loop1() {
 
   // Sjekker _isDark_ om det er natt eller dag og tenner/slukker utgang
   if (!manuell_styring && !manuell_toppsystem) {
+    if ( (!status_lys && isDark) || (status_lys && !isDark) ) {
+      status_lys != status_lys;
+      publiserTilstand(); // Publiserer tilstand på tenntidspunkt
+    }
     if (isDark) {
       Serial.print("Automatisk styring aktiv - Lampestatus: PÅ!\n");
       digitalWrite(Q0_0, HIGH);
